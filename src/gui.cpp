@@ -7,7 +7,7 @@
 #include <FL/Fl_Image.H>
 #include <FL/Fl_Tabs.H>
 
-ParameterWindow::ParameterWindow(int argc, char **argv, void fun(Fl_Widget*,void*))
+ParameterWindow::ParameterWindow(int argc, char **argv, void fun(Fl_Widget *, void *))
 {
     Fl::visual(FL_RGB);
     window = new Fl_Window(340, 300);
@@ -28,33 +28,28 @@ ParameterWindow::ParameterWindow(int argc, char **argv, void fun(Fl_Widget*,void
     window->show(argc, argv);
 }
 
-ImageWindow::ImageWindow(int argc, char **argv, cv::Mat img1, cv::Mat img2)
+ImageWindow::ImageWindow(int argc, char **argv, std::vector<Tab> tabs)
 {
-    
-    auto *imgWindow = new Fl_Window(img1.cols + 30, img1.rows + 60, "Image");
+    const int w = tabs.back().img.cols;
+    const int h = tabs.back().img.rows;
+    auto *imgWindow = new Fl_Window(w + 30, h + 60, "Image");
     {
-        auto *tabs = new Fl_Tabs(0, 0, img1.cols + 20, img1.rows + 50, "ImageTabs");
+        auto *tabs_widget = new Fl_Tabs(0, 0, w + 20, h + 50, "ImageTabs");
         {
-            auto *g1 = new Fl_Group(10, 30, img1.cols, img1.rows, "Tab1");
+            for (auto &[name, img] : tabs)
             {
-                auto *image = new Fl_RGB_Image(img1.data, img1.cols, img1.rows);
-                auto *pic_box = new Fl_Box(10, 30, img1.cols, img1.rows + 20, "MeinBild");
-                pic_box->image(image);
+                auto *g = new Fl_Group(10, 30, img.cols, img.rows, name);
+                {
+                    auto *image = new Fl_RGB_Image(img.data, img.cols, img.rows);
+                    auto *pic_box = new Fl_Box(10, 30, img.cols, img.rows + 20, name);
+                    pic_box->image(image);
+                }
+                g->end();
             }
-            g1->end();
-
-            auto *g2 = new Fl_Group(10, 30, img2.cols, img2.rows, "Tab2");
-            {
-                auto *image_rgb = new Fl_RGB_Image(img2.data, img2.cols, img2.rows);
-                auto *pic_box2 = new Fl_Box(10, 30, img2.cols, img2.rows + 20, "MeinBild");
-                pic_box2->image(image_rgb);
-            }
-            g2->end();
-            tabs->resizable(g1);
+            // tabs_widget->resizable(g1);
         }
-        tabs->end();
+        tabs_widget->end();
     }
     imgWindow->end();
     imgWindow->show(argc, argv);
-
 }

@@ -23,7 +23,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
     cv::cvtColor(img, rgbImg, cv::COLOR_BGR2RGB);
 
     ParameterWindow win(argc, argv, myCallback);
-    ImageWindow(argc, argv, img, rgbImg);
+    ImageWindow(argc, argv, {{"test", img},{"testRGB", rgbImg}});
     
     return Fl::run();
 }

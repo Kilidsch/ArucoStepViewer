@@ -2,6 +2,11 @@
 #include <FL/Fl_Window.H>
 #include <opencv2/aruco.hpp>
 
+struct Tab{
+    const char * name;
+    cv::Mat img;
+};
+
 class ParameterWindow
 {
 public:
@@ -16,5 +21,5 @@ private:
 class ImageWindow
 {
 public:
-    ImageWindow(int argc, char **argv, cv::Mat img1, cv::Mat img2);
+    ImageWindow(int argc, char **argv, std::vector<Tab> tabs);
 };

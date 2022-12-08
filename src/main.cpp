@@ -7,6 +7,7 @@
 #include <FL/Fl.H>
 
 #include "gui.h"
+#include "aruco.h"
 
 #include <FL/Fl_Value_Input.H>
 void myCallback(Fl_Widget *val, void *)
@@ -22,8 +23,17 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
     cv::Mat rgbImg;
     cv::cvtColor(img, rgbImg, cv::COLOR_BGR2RGB);
 
-    ParameterWindow win(argc, argv, myCallback);
-    ImageWindow(argc, argv, {{"test", img},{"testRGB", rgbImg}});
-    
+    std::vector<int> markerIds;
+    std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
+    cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
+    parameters->adaptiveThreshWinSizeMin = 10;
+    parameters->adaptiveThreshWinSizeMax = 400;
+    parameters->adaptiveThreshWinSizeStep = 20;
+    cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100);
+    auto threshImgs = simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+
+    [[maybe_unused]] auto parameterWindow = ParameterWindow(argc, argv, myCallback);
+    [[maybe_unused]] auto imageWindow = ImageWindow(argc, argv, {{"test", img}, {"testRGB", rgbImg}}, threshImgs);
+
     return Fl::run();
 }

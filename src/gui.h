@@ -7,6 +7,8 @@ struct Tab{
     cv::Mat img;
 };
 
+class Fl_Box;
+
 class ParameterWindow
 {
 public:
@@ -21,5 +23,10 @@ private:
 class ImageWindow
 {
 public:
-    ImageWindow(int argc, char **argv, std::vector<Tab> tabs);
+    ImageWindow(int argc, char **argv, std::vector<Tab> tabs, std::vector<cv::Mat>& threshImgs);
+private:
+    static void changeImage(Fl_Widget* w, void*);
+
+    std::vector<cv::Mat> threshImgs;
+    Fl_Box* threshBox;
 };

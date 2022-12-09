@@ -26,14 +26,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
     std::vector<int> markerIds;
     std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
     cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
-    parameters->adaptiveThreshWinSizeMin = 10;
-    parameters->adaptiveThreshWinSizeMax = 400;
-    parameters->adaptiveThreshWinSizeStep = 20;
+    // parameters->adaptiveThreshWinSizeMin = 10;
+    // parameters->adaptiveThreshWinSizeMax = 400;
+    // parameters->adaptiveThreshWinSizeStep = 20;
     cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100);
     auto threshImgs = simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
 
     [[maybe_unused]] auto parameterWindow = ParameterWindow(argc, argv, myCallback);
-    [[maybe_unused]] auto imageWindow = ImageWindow(argc, argv, {{"test", img}, {"testRGB", rgbImg}}, threshImgs);
+    [[maybe_unused]] auto imageWindow = ImageWindow(argc, argv, {{"test", {img}}, {"testRGB", {rgbImg}}, {"Thresholds", threshImgs}});
 
     return Fl::run();
 }

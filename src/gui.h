@@ -1,10 +1,23 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 #include <opencv2/aruco.hpp>
+#include <vector>
+#include <list>
+#include <optional>
 
-struct Tab{
-    const char * name;
-    cv::Mat img;
+class Fl_Box;
+
+struct CallbackHelper
+{
+    std::string name;
+    std::vector<cv::Mat> images;
+    Fl_Box *imgBox;
+};
+
+struct Tab
+{
+    const char *name;
+    std::vector<cv::Mat> imgs;
 };
 
 class Fl_Box;
@@ -23,10 +36,11 @@ private:
 class ImageWindow
 {
 public:
-    ImageWindow(int argc, char **argv, std::vector<Tab> tabs, std::vector<cv::Mat>& threshImgs);
-private:
-    static void changeImage(Fl_Widget* w, void*);
+    ImageWindow(int argc, char **argv, const std::vector<Tab>& tabs);
 
-    std::vector<cv::Mat> threshImgs;
-    Fl_Box* threshBox;
+private:
+    static void changeImage(Fl_Widget *w, void *self);
+
+    // using list for reference stability reasons
+    std::list<CallbackHelper> cbHelpers;
 };

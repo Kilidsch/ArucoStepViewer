@@ -22,12 +22,12 @@ void simulateCallback(Fl_Widget *, void *data)
     std::vector<int> markerIds;
     std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
     cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100);
-    auto threshImgs = simulateDetectMarkers(img, dictionary, markerCorners, markerIds, userParams, rejectedCandidates);
+    auto previewImgs = simulateDetectMarkers(img, dictionary, markerCorners, markerIds, userParams, rejectedCandidates);
 
 
     cv::Mat rgbImg;
     cv::cvtColor(img, rgbImg, cv::COLOR_BGR2RGB);
-    cbData->win.init({{"test", {img}}, {"testRGB", {rgbImg}}, {"Thresholds", threshImgs}});
+    cbData->win.init({{"test", {img}}, {"testRGB", {rgbImg}}, {"Thresholds", previewImgs.threshold}, {"Contours", previewImgs.contours}});
 }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
@@ -42,9 +42,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
     std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
     cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
     cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100);
-    auto threshImgs = simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+    auto previewImgs = simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
 
-    [[maybe_unused]] auto imageWindow = ImageWindow(argc, argv, {{"test", {img}}, {"testRGB", {rgbImg}}, {"Thresholds", threshImgs}});
+    [[maybe_unused]] auto imageWindow = ImageWindow(argc, argv, {{"test", {img}}, {"testRGB", {rgbImg}}, {"Thresholds", previewImgs.threshold}, {"Contours", previewImgs.contours}});
 
     SimulateCallbackData data{img, imageWindow};
     [[maybe_unused]] auto parameterWindow = ParameterWindow(argc, argv, simulateCallback, data);

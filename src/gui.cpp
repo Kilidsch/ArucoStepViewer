@@ -132,7 +132,7 @@ void ImageWindow::changeImage(Fl_Widget *w, void *data)
     int selectedScale = slider->value();
 
     auto &img = cbHelper->images.at(selectedScale);
-    auto *image = new Fl_RGB_Image(img.data, img.cols, img.rows, 1);
+    auto *image = new Fl_RGB_Image(img.data, img.cols, img.rows, img.channels(), img.step);
     cbHelper->imgBox->image(image);
     cbHelper->imgBox->redraw();
 }

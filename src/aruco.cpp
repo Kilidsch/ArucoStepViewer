@@ -296,7 +296,7 @@ static void _filterTooCloseCandidates(const vector<vector<Point2f>> &candidatesI
 static void _detectInitialCandidates(const Mat &grey, vector<vector<Point2f>> &candidates,
                                      vector<vector<Point>> &contours,
                                      const Ptr<DetectorParameters> &params,
-                                     std::vector<cv::Mat>& previewImages)
+                                     ArucoImages& previewImages)
 {
 
     CV_Assert(params->adaptiveThreshWinSizeMin >= 3 && params->adaptiveThreshWinSizeMax >= 3);
@@ -310,8 +310,8 @@ static void _detectInitialCandidates(const Mat &grey, vector<vector<Point2f>> &c
 
     vector<vector<vector<Point2f>>> candidatesArrays((size_t)nScales);
     vector<vector<vector<Point>>> contoursArrays((size_t)nScales);
-    previewImages.resize(nScales);
-
+    previewImages.threshold.resize(nScales);
+    previewImages.contours.resize(nScales);
 
     ////for each value in the interval of thresholding window sizes
     parallel_for_(Range(0, nScales), [&](const Range &range)
@@ -322,7 +322,7 @@ static void _detectInitialCandidates(const Mat &grey, vector<vector<Point2f>> &c
         for (int i = begin; i < end; i++) {
             int currScale = params->adaptiveThreshWinSizeMin + i * params->adaptiveThreshWinSizeStep;
             // threshold
-            Mat& thresh = previewImages[i]; // cv::Mat -> shared_ptr
+            Mat& thresh = previewImages.threshold[i]; // cv::Mat -> shared_ptr
             _threshold(grey, thresh, currScale, params->adaptiveThreshConstant);
             // TODO: How to show this? Parallel and number of images is dependent on parameters...
 
@@ -331,6 +331,9 @@ static void _detectInitialCandidates(const Mat &grey, vector<vector<Point2f>> &c
                                 params->minMarkerPerimeterRate, params->maxMarkerPerimeterRate,
                                 params->polygonalApproxAccuracyRate, params->minCornerDistanceRate,
                                 params->minDistanceToBorder);
+            // TODO: Draw contours! Save in Output
+            cv::cvtColor(thresh, previewImages.contours[i], cv::COLOR_GRAY2BGR);
+            cv::drawContours(previewImages.contours[i], contoursArrays[i], -1, cv::Scalar(255,0,0), 2);
         } });
 
     // join candidates
@@ -349,7 +352,7 @@ static void _detectInitialCandidates(const Mat &grey, vector<vector<Point2f>> &c
  */
 static void _detectCandidates(InputArray _image, vector<vector<vector<Point2f>>> &candidatesSetOut,
                               vector<vector<vector<Point>>> &contoursSetOut, const Ptr<DetectorParameters> &_params,
-                              std::vector<cv::Mat>& thresholdImgs)
+                              ArucoImages& result)
 {
 
     Mat image = _image.getMat();
@@ -364,7 +367,7 @@ static void _detectCandidates(InputArray _image, vector<vector<vector<Point2f>>>
     vector<vector<Point2f>> candidates;
     vector<vector<Point>> contours;
     /// 2. DETECT FIRST SET OF CANDIDATES
-    _detectInitialCandidates(grey, candidates, contours, _params, thresholdImgs);
+    _detectInitialCandidates(grey, candidates, contours, _params, result);
     /// 3. SORT CORNERS
     _reorderCandidatesCorners(candidates);
 
@@ -828,7 +831,7 @@ static void _refineCandidateLines(std::vector<Point> &nContours, std::vector<Poi
 /**
  * This is a modified version of "detectMarkers", which creates debug images
  */
-std::vector<cv::Mat> simulateDetectMarkers(InputArray _image, const Ptr<Dictionary> &_dictionary, OutputArrayOfArrays _corners,
+ArucoImages simulateDetectMarkers(InputArray _image, const Ptr<Dictionary> &_dictionary, OutputArrayOfArrays _corners,
                            OutputArray _ids, const Ptr<DetectorParameters> &_params,
                            OutputArrayOfArrays _rejectedImgPoints, InputArrayOfArrays camMatrix, InputArrayOfArrays distCoeff)
 {
@@ -856,8 +859,8 @@ std::vector<cv::Mat> simulateDetectMarkers(InputArray _image, const Ptr<Dictiona
 
     /// STEP 1.b Detect marker candidates :: traditional way
     // else
-    std::vector<cv::Mat> threshImgs;
-    _detectCandidates(grey, candidatesSet, contoursSet, _params, threshImgs);
+    ArucoImages result;
+    _detectCandidates(grey, candidatesSet, contoursSet, _params, result);
 
     /// STEP 2: Check candidate codification (identify markers)
     _identifyCandidates(grey, candidatesSet, contoursSet, _dictionary, candidates, contours, ids, _params,
@@ -911,5 +914,5 @@ std::vector<cv::Mat> simulateDetectMarkers(InputArray _image, const Ptr<Dictiona
 
 
 
-    return threshImgs;
+    return result;
 }

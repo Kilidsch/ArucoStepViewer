@@ -1,19 +1,19 @@
 #include "gui.h"
 
-#include <FL/Fl_Pack.H>
 #include <FL/Fl_Box.H>
-#include <FL/Fl_Value_Input.H>
-#include <FL/fl_draw.H>
-#include <FL/Fl_Value_Slider.H>
-#include <FL/Fl_Image.H>
-#include <FL/Fl_Tabs.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Image.H>
+#include <FL/Fl_Pack.H>
+#include <FL/Fl_Tabs.H>
+#include <FL/Fl_Value_Input.H>
+#include <FL/Fl_Value_Slider.H>
+#include <FL/fl_draw.H>
 
 #include <opencv2/imgproc.hpp>
 
 const cv::Size DEFAULT_SIZE{1280, 720};
 
-ParameterWindow::ParameterWindow(int argc, char **argv, void fun(Fl_Widget *, void *), SimulateCallbackData& data)
+ParameterWindow::ParameterWindow(int argc, char **argv, void fun(Fl_Widget *, void *), SimulateCallbackData &data)
 {
     Fl::visual(FL_RGB);
     data.pmWin = this;
@@ -24,16 +24,22 @@ ParameterWindow::ParameterWindow(int argc, char **argv, void fun(Fl_Widget *, vo
             maxThresh = new Fl_Value_Input(120, 40, 100, 30, "Max. Thresh:");
             maxThresh->labeltype(FL_NORMAL_LABEL);
             maxThresh->minimum(3);
-            //maxThresh->callback(fun, &data);
+            // maxThresh->callback(fun, &data);
 
             minThresh = new Fl_Value_Input(120, 40, 100, 30, "Min. Thresh:");
             minThresh->labeltype(FL_NORMAL_LABEL);
             minThresh->minimum(3);
-            //minThresh->callback(fun, &data);
+            // minThresh->callback(fun, &data);
 
-            stepThresh = new Fl_Value_Input(120, 40, 100, 30, "Min. Thresh:");
+            stepThresh = new Fl_Value_Input(120, 40, 100, 30, "Step Thresh:");
             stepThresh->labeltype(FL_NORMAL_LABEL);
-            //stepThresh->callback(fun, &data);
+            // stepThresh->callback(fun, &data);
+
+            constThresh = new Fl_Value_Input(120, 40, 100, 30, "Thrsh constant:");
+            maxPerimeter = new Fl_Value_Input(120, 40, 100, 30, "May perimeter");
+            minCornerDist = new Fl_Value_Input(120, 40, 100, 30, "Min corner dist.");
+            accRate = new Fl_Value_Input(120, 40, 100, 30, "Poly. Acc.");
+            minMarkerDist = new Fl_Value_Input(120, 40, 100, 30, "Min Marker dist.");
 
             auto *btn = new Fl_Button(120, 40, 100, 30, "Run");
             btn->when(FL_WHEN_RELEASE);
@@ -55,6 +61,13 @@ cv::Ptr<cv::aruco::DetectorParameters> ParameterWindow::getArucoParameters()
     params->adaptiveThreshWinSizeMax = (int)maxThresh->value();
     params->adaptiveThreshWinSizeMin = (int)minThresh->value();
     params->adaptiveThreshWinSizeStep = (int)stepThresh->value();
+    params->adaptiveThreshConstant = (int)constThresh->value();
+
+    params->maxMarkerPerimeterRate = maxPerimeter->value();
+    params->minCornerDistanceRate = minCornerDist->value();
+    params->polygonalApproxAccuracyRate = accRate->value();
+
+    params->minMarkerDistanceRate = minMarkerDist->value();
 
     return params;
 }
@@ -64,6 +77,13 @@ void ParameterWindow::fromArucoParameters(cv::Ptr<cv::aruco::DetectorParameters>
     maxThresh->value(params->adaptiveThreshWinSizeMax);
     minThresh->value(params->adaptiveThreshWinSizeMin);
     stepThresh->value(params->adaptiveThreshWinSizeStep);
+    constThresh->value(params->adaptiveThreshConstant);
+
+    maxPerimeter->value(params->maxMarkerPerimeterRate);
+    minCornerDist->value(params->minCornerDistanceRate);
+    accRate->value(params->polygonalApproxAccuracyRate);
+
+    minMarkerDist->value(params->minMarkerDistanceRate);
 }
 
 static void resizeImages(std::vector<cv::Mat> &imgs, cv::Size s = DEFAULT_SIZE)

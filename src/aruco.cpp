@@ -8,6 +8,7 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#include <iostream>
 
 using namespace cv;
 using namespace cv::aruco;
@@ -929,6 +930,11 @@ ArucoImages simulateDetectMarkers(InputArray _image, const Ptr<Dictionary> &_dic
             // copy the corners to the output array
             _copyVector2Output(candidates, _corners);
         }
+    }
+
+    std::cout << "Detected ids:\n";
+    for(int id : ids){
+        std::cout << id << std::endl;
     }
 
     return result;

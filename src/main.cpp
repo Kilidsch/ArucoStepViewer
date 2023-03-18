@@ -37,9 +37,9 @@ void simulateCallback(Fl_Widget *, void *data)
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 {
-    std::string path = R"(/home/deniz/images/test.jpg)";
+    std::string path = R"(/home/deniz/Bilder/cake1080p2.png)";
     auto img = cv::imread(path);
-    cv::medianBlur(img, img, 5);
+    //cv::medianBlur(img, img, 5);
 
     // cv::resize(img, img, {0, 0}, 0.2, 0.2);
     cv::Mat rgbImg;

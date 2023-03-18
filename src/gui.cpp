@@ -36,7 +36,8 @@ ParameterWindow::ParameterWindow(int argc, char **argv, void fun(Fl_Widget *, vo
             // stepThresh->callback(fun, &data);
 
             constThresh = new Fl_Value_Input(120, 40, 100, 30, "Thrsh constant:");
-            maxPerimeter = new Fl_Value_Input(120, 40, 100, 30, "May perimeter");
+            minPerimeter = new Fl_Value_Input(120, 40, 100, 30, "Min perimeter");
+            maxPerimeter = new Fl_Value_Input(120, 40, 100, 30, "Max perimeter");
             minCornerDist = new Fl_Value_Input(120, 40, 100, 30, "Min corner dist.");
             accRate = new Fl_Value_Input(120, 40, 100, 30, "Poly. Acc.");
             minMarkerDist = new Fl_Value_Input(120, 40, 100, 30, "Min Marker dist.");
@@ -53,8 +54,6 @@ ParameterWindow::ParameterWindow(int argc, char **argv, void fun(Fl_Widget *, vo
     window->show(argc, argv);
 }
 
-#include <iostream>
-
 cv::Ptr<cv::aruco::DetectorParameters> ParameterWindow::getArucoParameters()
 {
     auto params = cv::aruco::DetectorParameters::create();
@@ -63,6 +62,7 @@ cv::Ptr<cv::aruco::DetectorParameters> ParameterWindow::getArucoParameters()
     params->adaptiveThreshWinSizeStep = (int)stepThresh->value();
     params->adaptiveThreshConstant = (int)constThresh->value();
 
+    params->minMarkerPerimeterRate = minPerimeter->value();
     params->maxMarkerPerimeterRate = maxPerimeter->value();
     params->minCornerDistanceRate = minCornerDist->value();
     params->polygonalApproxAccuracyRate = accRate->value();
@@ -79,6 +79,7 @@ void ParameterWindow::fromArucoParameters(cv::Ptr<cv::aruco::DetectorParameters>
     stepThresh->value(params->adaptiveThreshWinSizeStep);
     constThresh->value(params->adaptiveThreshConstant);
 
+    minPerimeter->value(params->minMarkerPerimeterRate);
     maxPerimeter->value(params->maxMarkerPerimeterRate);
     minCornerDist->value(params->minCornerDistanceRate);
     accRate->value(params->polygonalApproxAccuracyRate);

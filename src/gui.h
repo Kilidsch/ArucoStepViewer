@@ -47,6 +47,7 @@ class ParameterWindow
     Fl_Value_Input *minThresh;
     Fl_Value_Input *stepThresh;
     Fl_Value_Input *constThresh;
+    Fl_Value_Input *minPerimeter;
     Fl_Value_Input *maxPerimeter;
     Fl_Value_Input *minCornerDist;
     Fl_Value_Input *accRate;

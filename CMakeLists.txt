@@ -22,6 +22,7 @@ find_package(FLTK REQUIRED)
 
 
 add_executable(aruco_viewer)
+target_compile_features(aruco_viewer PUBLIC cxx_std_17)
 target_link_libraries(aruco_viewer PRIVATE ${OpenCV_LIBS} fltk)
 target_include_directories(aruco_viewer PRIVATE ${FLTK_INCLUDE_DIRS})
 

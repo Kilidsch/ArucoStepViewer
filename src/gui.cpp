@@ -127,7 +127,8 @@ void ImageWindow::init(const std::vector<Tab> &tabs)
                     auto &cbHelper = cbHelpers.back();
                     resizeImages(cbHelper.images);
                     auto &img = cbHelper.images.front();
-                    auto *image = new Fl_RGB_Image(img.data, img.cols, img.rows, img.channels(), img.step);
+                    auto *image =
+                        new Fl_RGB_Image(img.data, img.cols, img.rows, img.channels(), static_cast<int>(img.step));
                     pic_box->image(image);
 
                     auto *scale_selection = new Fl_Value_Slider(10, img.rows + 60, img.cols, 30, "Scale:");
@@ -150,10 +151,10 @@ void ImageWindow::changeImage(Fl_Widget *w, void *data)
 {
     auto *cbHelper = (CallbackHelper *)data;
     auto *slider = (Fl_Value_Slider *)w;
-    int selectedScale = slider->value();
+    int selectedScale = static_cast<int>(slider->value());
 
     auto &img = cbHelper->images.at(selectedScale);
-    auto *image = new Fl_RGB_Image(img.data, img.cols, img.rows, img.channels(), img.step);
+    auto *image = new Fl_RGB_Image(img.data, img.cols, img.rows, img.channels(), static_cast<int>(img.step));
     cbHelper->imgBox->image(image);
     cbHelper->imgBox->redraw();
 }

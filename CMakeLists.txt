@@ -17,13 +17,13 @@ list(APPEND COMMON_COMPILE_OPTIONS
 find_package(OpenCV REQUIRED)
 message(STATUS "Using OpenCV version ${OpenCV_VERSION}")
 message(STATUS "${OpenCV_LIBS}")
-find_package(FLTK REQUIRED)
+find_package(FLTK CONFIG REQUIRED)
 
 
 
 add_executable(aruco_viewer)
 target_compile_features(aruco_viewer PUBLIC cxx_std_17)
-target_link_libraries(aruco_viewer PRIVATE ${OpenCV_LIBS} fltk)
+target_link_libraries(aruco_viewer PRIVATE ${OpenCV_LIBS} fltk fltk_gl fltk_forms fltk_images)
 target_include_directories(aruco_viewer PRIVATE ${FLTK_INCLUDE_DIRS})
 
 # FLTK needs this

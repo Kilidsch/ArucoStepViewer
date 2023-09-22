@@ -1,0 +1,14 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+    "dependencies": [
+        {
+            "name": "opencv",
+            "default-features": false,
+            "features": [
+                "contrib"
+            ]
+        },
+        "fltk"
+    ],
+    "builtin-baseline": "401578455faece3db28615775420fb0f22f9bd07"
+}

@@ -33,4 +33,4 @@ endif (APPLE)
 
 target_compile_options(aruco_viewer PRIVATE ${COMMON_COMPILE_OPTIONS})
 
-target_sources(aruco_viewer PRIVATE src/main.cpp src/gui.h src/gui.cpp src/aruco.cpp src/aruco.h)
+target_sources(aruco_viewer PRIVATE src/main.cpp src/gui.h src/gui.cpp src/aruco.cpp src/aruco.h src/testimages.h src/testimages.cpp)

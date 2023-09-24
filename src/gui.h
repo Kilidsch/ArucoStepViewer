@@ -5,6 +5,8 @@
 #include <optional>
 #include <vector>
 
+#include "testimages.h"
+
 class Fl_Box;
 class Fl_Tabs;
 class Fl_Value_Input;
@@ -23,12 +25,6 @@ struct CallbackHelper
     std::string name;
     std::vector<cv::Mat> images;
     Fl_Box *imgBox;
-};
-
-struct Tab
-{
-    const char *name;
-    std::vector<cv::Mat> imgs;
 };
 
 class Fl_Box;

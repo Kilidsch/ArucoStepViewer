@@ -5,10 +5,11 @@
 #include "aruco.h"
 
 #include "opencv2/aruco.hpp"
+#include "testimages.h"
+#include <iostream>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
-#include <iostream>
 
 using namespace cv;
 using namespace cv::aruco;
@@ -48,8 +49,7 @@ static void _threshold(InputArray _in, OutputArray _out, int winSize, double con
  */
 static void _findMarkerContours(InputArray _in, vector<vector<Point2f>> &candidates, vector<vector<Point>> &contoursOut,
                                 double minPerimeterRate, double maxPerimeterRate, double accuracyRate,
-                                double minCornerDistanceRate, int minDistanceToBorder, ArucoImages &previewImgs,
-                                size_t index)
+                                double minCornerDistanceRate, int minDistanceToBorder)
 {
 
     CV_Assert(minPerimeterRate > 0 && maxPerimeterRate > 0 && accuracyRate > 0 && minCornerDistanceRate >= 0 &&
@@ -63,30 +63,31 @@ static void _findMarkerContours(InputArray _in, vector<vector<Point2f>> &candida
     _in.getMat().copyTo(contoursImg);
     vector<vector<Point>> contours;
     findContours(contoursImg, contours, RETR_LIST, CHAIN_APPROX_NONE);
-    cv::cvtColor(contoursImg, previewImgs.contoursRaw[index], cv::COLOR_GRAY2RGB);
-    drawContours(previewImgs.contoursRaw[index], contours, -1, cv::Scalar{255, 0, 0}, 3);
 
-    Contours contPerimeter;
-    Contours contMinDist;
-    Contours contSquareConvex;
+    cv::Mat bgr_contours;
+    cv::cvtColor(contoursImg, bgr_contours, cv::COLOR_GRAY2BGR);
+    cv::Mat contour_drawn = bgr_contours.clone();
+    cv::drawContours(contour_drawn, contours, -1, cv::Scalar(0, 0, 255), 1);
+    TestImages::getInstance().addImg("contours", contour_drawn);
+    Contours after_perimeter;
+    Contours after_approx_curve;
+    Contours after_min_dist;
+    Contours after_near_border;
+
     // now filter list of contours
     for (unsigned int i = 0; i < contours.size(); i++)
     {
         // check perimeter
         if (contours[i].size() < minPerimeterPixels || contours[i].size() > maxPerimeterPixels)
-        {
-            contPerimeter.push_back(contours[i]);
             continue;
-        }
+        after_perimeter.push_back(contours[i]);
 
         // check is square and is convex
         vector<Point> approxCurve;
         approxPolyDP(contours[i], approxCurve, double(contours[i].size()) * accuracyRate, true);
         if (approxCurve.size() != 4 || !isContourConvex(approxCurve))
-        {
-            contSquareConvex.push_back(contours[i]);
             continue;
-        }
+        after_approx_curve.push_back(contours[i]);
 
         // check min distance between corners
         double minDistSq = max(contoursImg.cols, contoursImg.rows) * max(contoursImg.cols, contoursImg.rows);
@@ -100,10 +101,8 @@ static void _findMarkerContours(InputArray _in, vector<vector<Point2f>> &candida
         }
         double minCornerDistancePixels = double(contours[i].size()) * minCornerDistanceRate;
         if (minDistSq < minCornerDistancePixels * minCornerDistancePixels)
-        {
-            contMinDist.push_back(contours[i]);
             continue;
-        }
+        after_min_dist.push_back(contours[i]);
 
         // check if it is too near to the image border
         bool tooNearBorder = false;
@@ -116,6 +115,7 @@ static void _findMarkerContours(InputArray _in, vector<vector<Point2f>> &candida
         }
         if (tooNearBorder)
             continue;
+        after_near_border.push_back(contours[i]);
 
         // if it passes all the test, add to candidates vector
         vector<Point2f> currentCandidate;
@@ -127,14 +127,15 @@ static void _findMarkerContours(InputArray _in, vector<vector<Point2f>> &candida
         candidates.push_back(currentCandidate);
         contoursOut.push_back(contours[i]);
     }
-
-    cv::cvtColor(contoursImg, previewImgs.contoursMinDist[index], cv::COLOR_GRAY2RGB);
-    previewImgs.contoursPerimeter[index] = previewImgs.contoursMinDist[index].clone();
-    previewImgs.contoursSquareConvex[index] = previewImgs.contoursMinDist[index].clone();
-
-    drawContours(previewImgs.contoursPerimeter[index], contPerimeter, -1, cv::Scalar{255, 0, 0}, 3);
-    drawContours(previewImgs.contoursMinDist[index], contMinDist, -1, cv::Scalar{255, 0, 0}, 3);
-    drawContours(previewImgs.contoursSquareConvex[index], contSquareConvex, -1, cv::Scalar{255, 0, 0}, 3);
+    auto draw_conts = [&](const std::string &name, const Contours &conts) {
+        contour_drawn = bgr_contours.clone();
+        cv::drawContours(contour_drawn, conts, -1, cv::Scalar(0, 0, 255), 1);
+        TestImages::getInstance().addImg(name, contour_drawn);
+    };
+    draw_conts("perimeter", after_perimeter);
+    draw_conts("approx. curve", after_approx_curve);
+    draw_conts("min. distance", after_min_dist);
+    draw_conts("near border", after_near_border);
 }
 
 /**
@@ -316,8 +317,7 @@ static void _filterTooCloseCandidates(const vector<vector<Point2f>> &candidatesI
  * @brief Initial steps on finding square candidates
  */
 static void _detectInitialCandidates(const Mat &grey, vector<vector<Point2f>> &candidates,
-                                     vector<vector<Point>> &contours, const Ptr<DetectorParameters> &params,
-                                     ArucoImages &previewImages)
+                                     vector<vector<Point>> &contours, const Ptr<DetectorParameters> &params)
 {
 
     CV_Assert(params->adaptiveThreshWinSizeMin >= 3 && params->adaptiveThreshWinSizeMax >= 3);
@@ -330,12 +330,6 @@ static void _detectInitialCandidates(const Mat &grey, vector<vector<Point2f>> &c
 
     vector<vector<vector<Point2f>>> candidatesArrays((size_t)nScales);
     vector<vector<vector<Point>>> contoursArrays((size_t)nScales);
-    previewImages.threshold.resize(nScales);
-    previewImages.contours.resize(nScales);
-    previewImages.contoursRaw.resize(nScales);
-    previewImages.contoursMinDist.resize(nScales);
-    previewImages.contoursPerimeter.resize(nScales);
-    previewImages.contoursSquareConvex.resize(nScales);
 
     ////for each value in the interval of thresholding window sizes
     parallel_for_(Range(0, nScales), [&](const Range &range) {
@@ -346,17 +340,14 @@ static void _detectInitialCandidates(const Mat &grey, vector<vector<Point2f>> &c
         {
             int currScale = params->adaptiveThreshWinSizeMin + i * params->adaptiveThreshWinSizeStep;
             // threshold
-            Mat &thresh = previewImages.threshold[i]; // cv::Mat -> shared_ptr
+            Mat thresh;
             _threshold(grey, thresh, currScale, params->adaptiveThreshConstant);
-            // TODO: How to show this? Parallel and number of images is dependent on parameters...
+            TestImages::getInstance().addImg("threshold", thresh);
 
             // detect rectangles
             _findMarkerContours(thresh, candidatesArrays[i], contoursArrays[i], params->minMarkerPerimeterRate,
                                 params->maxMarkerPerimeterRate, params->polygonalApproxAccuracyRate,
-                                params->minCornerDistanceRate, params->minDistanceToBorder, previewImages, i);
-            // TODO: Draw contours! Save in Output
-            cv::cvtColor(thresh, previewImages.contours[i], cv::COLOR_GRAY2BGR);
-            cv::drawContours(previewImages.contours[i], contoursArrays[i], -1, cv::Scalar(255, 0, 0), 2);
+                                params->minCornerDistanceRate, params->minDistanceToBorder);
         }
     });
 
@@ -375,8 +366,7 @@ static void _detectInitialCandidates(const Mat &grey, vector<vector<Point2f>> &c
  * @brief Detect square candidates in the input image
  */
 static void _detectCandidates(InputArray _image, vector<vector<vector<Point2f>>> &candidatesSetOut,
-                              vector<vector<vector<Point>>> &contoursSetOut, const Ptr<DetectorParameters> &_params,
-                              ArucoImages &result)
+                              vector<vector<vector<Point>>> &contoursSetOut, const Ptr<DetectorParameters> &_params)
 {
 
     Mat image = _image.getMat();
@@ -386,12 +376,11 @@ static void _detectCandidates(InputArray _image, vector<vector<vector<Point2f>>>
     Mat grey;
     _convertToGrey(image, grey);
 
-    // TODO: gray image as debug
-
     vector<vector<Point2f>> candidates;
     vector<vector<Point>> contours;
     /// 2. DETECT FIRST SET OF CANDIDATES
-    _detectInitialCandidates(grey, candidates, contours, _params, result);
+    _detectInitialCandidates(grey, candidates, contours, _params);
+
     /// 3. SORT CORNERS
     _reorderCandidatesCorners(candidates);
 
@@ -685,6 +674,23 @@ static void _identifyCandidates(InputArray _image, vector<vector<vector<Point2f>
 }
 
 /**
+ * @brief Return object points for the system centered in a single marker, given the marker length
+ */
+static void _getSingleMarkerObjectPoints(float markerLength, OutputArray _objPoints)
+{
+
+    CV_Assert(markerLength > 0);
+
+    _objPoints.create(4, 1, CV_32FC3);
+    Mat objPoints = _objPoints.getMat();
+    // set coordinate system in the middle of the marker, with Z pointing out
+    objPoints.ptr<Vec3f>(0)[0] = Vec3f(-markerLength / 2.f, markerLength / 2.f, 0);
+    objPoints.ptr<Vec3f>(0)[1] = Vec3f(markerLength / 2.f, markerLength / 2.f, 0);
+    objPoints.ptr<Vec3f>(0)[2] = Vec3f(markerLength / 2.f, -markerLength / 2.f, 0);
+    objPoints.ptr<Vec3f>(0)[3] = Vec3f(-markerLength / 2.f, -markerLength / 2.f, 0);
+}
+
+/**
  * Line fitting  A * B = C :: Called from function refineCandidateLines
  * @param nContours, contour-container
  */
@@ -848,18 +854,19 @@ static void _refineCandidateLines(std::vector<Point> &nContours, std::vector<Poi
 }
 
 /**
- * This is a modified version of "detectMarkers", which creates debug images
  */
-ArucoImages simulateDetectMarkers(InputArray _image, const Ptr<Dictionary> &_dictionary, OutputArrayOfArrays _corners,
-                                  OutputArray _ids, const Ptr<DetectorParameters> &_params,
-                                  OutputArrayOfArrays _rejectedImgPoints, InputArrayOfArrays camMatrix,
-                                  InputArrayOfArrays distCoeff)
+void simulateDetectMarkers(InputArray _image, const Ptr<Dictionary> &_dictionary, OutputArrayOfArrays _corners,
+                           OutputArray _ids, const Ptr<DetectorParameters> &_params,
+                           OutputArrayOfArrays _rejectedImgPoints, InputArrayOfArrays camMatrix,
+                           InputArrayOfArrays distCoeff)
 {
-
+    TestImages::getInstance().clearTabs();
     CV_Assert(!_image.empty());
+    TestImages::getInstance().addImg("Input", _image.getMat());
 
     Mat grey;
     _convertToGrey(_image.getMat(), grey);
+    TestImages::getInstance().addImg("Grayscale", grey);
 
     /// STEP 1: Detect marker candidates
     vector<vector<Point2f>> candidates;
@@ -869,18 +876,18 @@ ArucoImages simulateDetectMarkers(InputArray _image, const Ptr<Dictionary> &_dic
     vector<vector<vector<Point2f>>> candidatesSet;
     vector<vector<vector<Point>>> contoursSet;
     /// STEP 1.a Detect marker candidates :: using AprilTag
-    // NOTE: This little application works explicitly with aruco, not apriltag
-    // if(_params->cornerRefinementMethod == CORNER_REFINE_APRILTAG){
-    //     _apriltag(grey, _params, candidates, contours);
+    /// THIS CODE IS ONLY FOR ARUCO
+    //    if (_params->cornerRefinementMethod == CORNER_REFINE_APRILTAG)
+    //    {
+    //        _apriltag(grey, _params, candidates, contours);
 
-    //     candidatesSet.push_back(candidates);
-    //     contoursSet.push_back(contours);
-    // }
+    //        candidatesSet.push_back(candidates);
+    //        contoursSet.push_back(contours);
+    //    }
 
     /// STEP 1.b Detect marker candidates :: traditional way
     // else
-    ArucoImages result;
-    _detectCandidates(grey, candidatesSet, contoursSet, _params, result);
+    _detectCandidates(grey, candidatesSet, contoursSet, _params);
 
     /// STEP 2: Check candidate codification (identify markers)
     _identifyCandidates(grey, candidatesSet, contoursSet, _dictionary, candidates, contours, ids, _params,
@@ -933,9 +940,8 @@ ArucoImages simulateDetectMarkers(InputArray _image, const Ptr<Dictionary> &_dic
     }
 
     std::cout << "Detected ids:\n";
-    for(int id : ids){
+    for (int id : ids)
+    {
         std::cout << id << std::endl;
     }
-
-    return result;
 }

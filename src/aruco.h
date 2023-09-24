@@ -13,9 +13,8 @@ struct ArucoImages
     // no extra thing for close to image border by now
 };
 
-ArucoImages simulateDetectMarkers(cv::InputArray _image, const cv::Ptr<cv::aruco::Dictionary> &_dictionary,
-                                  cv::OutputArrayOfArrays _corners, cv::OutputArray _ids,
-                                  const cv::Ptr<cv::aruco::DetectorParameters> &_params,
-                                  cv::OutputArrayOfArrays _rejectedImgPoints,
-                                  cv::InputArrayOfArrays camMatrix = cv::noArray(),
-                                  cv::InputArrayOfArrays distCoeff = cv::noArray());
+void simulateDetectMarkers(cv::InputArray _image, const cv::Ptr<cv::aruco::Dictionary> &_dictionary,
+                           cv::OutputArrayOfArrays _corners, cv::OutputArray _ids,
+                           const cv::Ptr<cv::aruco::DetectorParameters> &_params,
+                           cv::OutputArrayOfArrays _rejectedImgPoints, cv::InputArrayOfArrays camMatrix = cv::noArray(),
+                           cv::InputArrayOfArrays distCoeff = cv::noArray());

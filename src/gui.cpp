@@ -120,9 +120,9 @@ void ImageWindow::init(const std::vector<Tab> &tabs)
         {
             for (auto &[name, img_vec] : tabs)
             {
-                auto *g = new Fl_Group(10, 30, w, h + 100, name);
+                auto *g = new Fl_Group(10, 30, w, h + 100, name.c_str());
                 {
-                    auto *pic_box = new Fl_Box(10, 30, w, h + 20, name);
+                    auto *pic_box = new Fl_Box(10, 30, w, h + 20, name.c_str());
                     cbHelpers.push_back(CallbackHelper{name, img_vec, pic_box});
                     auto &cbHelper = cbHelpers.back();
                     resizeImages(cbHelper.images);

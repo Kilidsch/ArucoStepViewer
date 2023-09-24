@@ -21,23 +21,24 @@ void simulateCallback(Fl_Widget *, void *data)
     std::vector<int> markerIds;
     std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
     cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100);
-    auto previewImgs = simulateDetectMarkers(img, dictionary, markerCorners, markerIds, userParams, rejectedCandidates);
+    simulateDetectMarkers(img, dictionary, markerCorners, markerIds, userParams, rejectedCandidates);
 
     cv::Mat rgbImg;
     cv::cvtColor(img, rgbImg, cv::COLOR_BGR2RGB);
-    cbData->win.init({{"test", {img}},
-                      {"testRGB", {rgbImg}},
-                      {"Thresholds", previewImgs.threshold},
-                      {"Contours", previewImgs.contours},
-                      {"Raw Contours", previewImgs.contoursRaw},
-                      {"Perimeter", previewImgs.contoursPerimeter},
-                      {"Square", previewImgs.contoursSquareConvex},
-                      {"MinDist", previewImgs.contoursMinDist}});
+    cbData->win.init(TestImages::getInstance().getTabs());
 }
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 {
-    std::string path = R"(/home/deniz/Bilder/cake1080p2.png)";
+    std::string path;
+    if (argc > 1)
+    {
+        path = argv[1];
+    }
+    else
+    {
+        path = R"(D:\KleineProjekte\ArucoStepViewer\test.png)";
+    }
     auto img = cv::imread(path);
     //cv::medianBlur(img, img, 5);
 
@@ -49,17 +50,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
     std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
     cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
     cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100);
-    auto previewImgs = simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+    simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
 
-    [[maybe_unused]] auto imageWindow = ImageWindow(argc, argv,
-                                                    {{"test", {img}},
-                                                     {"testRGB", {rgbImg}},
-                                                     {"Thresholds", previewImgs.threshold},
-                                                     {"Contours", previewImgs.contours},
-                                                     {"Raw Contours", previewImgs.contoursRaw},
-                                                     {"Perimeter", previewImgs.contoursPerimeter},
-                                                     {"Square", previewImgs.contoursSquareConvex},
-                                                     {"MinDist", previewImgs.contoursMinDist}});
+    [[maybe_unused]] auto imageWindow = ImageWindow(argc, argv, TestImages::getInstance().getTabs());
 
     SimulateCallbackData data{img, imageWindow};
     [[maybe_unused]] auto parameterWindow = ParameterWindow(argc, argv, simulateCallback, data);

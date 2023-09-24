@@ -342,7 +342,9 @@ static void _detectInitialCandidates(const Mat &grey, vector<vector<Point2f>> &c
             // threshold
             Mat thresh;
             _threshold(grey, thresh, currScale, params->adaptiveThreshConstant);
-            TestImages::getInstance().addImg("threshold", thresh);
+            cv::Mat bgr_thresh;
+            cv::cvtColor(thresh, bgr_thresh, cv::COLOR_GRAY2BGR);
+            TestImages::getInstance().addImg("threshold", bgr_thresh);
 
             // detect rectangles
             _findMarkerContours(thresh, candidatesArrays[i], contoursArrays[i], params->minMarkerPerimeterRate,
@@ -866,7 +868,9 @@ void simulateDetectMarkers(InputArray _image, const Ptr<Dictionary> &_dictionary
 
     Mat grey;
     _convertToGrey(_image.getMat(), grey);
-    TestImages::getInstance().addImg("Grayscale", grey);
+    cv::Mat bgr_grey;
+    cv::cvtColor(grey, bgr_grey, cv::COLOR_GRAY2BGR);
+    TestImages::getInstance().addImg("Grayscale", bgr_grey);
 
     /// STEP 1: Detect marker candidates
     vector<vector<Point2f>> candidates;

@@ -11,7 +11,8 @@ class ImageModel : public QAbstractListModel
     enum ImageRoles
     {
         ImageRole = Qt::UserRole + 1,
-        TabName
+        TabName,
+        ImageListRole
     };
 
   public:

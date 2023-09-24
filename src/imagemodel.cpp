@@ -1,7 +1,6 @@
 #include "imagemodel.h"
 
 #include <QImage>
-#include <iostream>
 
 ImageModel::ImageModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -22,7 +21,6 @@ QVariant ImageModel::data(const QModelIndex &index, int role) const
     Q_UNUSED(role)
     if (!index.isValid())
     {
-        std::cerr << "Invalid indexy?!?!\n";
         return QVariant();
     }
 
@@ -37,6 +35,16 @@ QVariant ImageModel::data(const QModelIndex &index, int role) const
     {
         return QVariant(QString::fromStdString(tab.name));
     }
+    else if (role == ImageRoles::ImageListRole)
+    {
+        QVariantList image_list;
+        for (const auto &cv_img : tab.imgs)
+        {
+            QImage show_img{cv_img.data, cv_img.cols, cv_img.rows, QImage::Format::Format_BGR888};
+            image_list.push_back(show_img);
+        }
+        return QVariant(image_list);
+    }
     else
     {
         return QVariant();
@@ -48,5 +56,6 @@ QHash<int, QByteArray> ImageModel::roleNames() const
     QHash<int, QByteArray> roles;
     roles[ImageRole] = "image";
     roles[TabName] = "name";
+    roles[ImageListRole] = "image_list";
     return roles;
 }

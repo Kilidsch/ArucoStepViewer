@@ -22,16 +22,41 @@ ApplicationWindow {
     }
 
     StackLayout {
+        id: mystack
         width: parent.width
         height: parent.height - bar.height
         y: bar.height
         currentIndex: bar.currentIndex
         Repeater {
+            width: parent.width
+            height: parent.height
             model: ImageModel
-            delegate: ImageItem {
-                img: image
-                height: parent.height
+            delegate: ColumnLayout{
                 width: parent.width
+                height: parent.height
+                spacing: 0
+                TabBar {
+                    id: sub_bar
+                    width: parent.width
+                    Repeater {
+                        model: image_list
+                        delegate: TabButton {
+                            text: index
+                        }
+                    }
+                }
+                StackLayout
+                {
+                    currentIndex: sub_bar.currentIndex
+                    Repeater {
+                        model: image_list
+                        ImageItem {
+                            img: image_list[index]
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                        }
+                    }
+                }
             }
         }
     }

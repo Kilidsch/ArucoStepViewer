@@ -30,6 +30,7 @@ qt_add_qml_module(aruco_viewer
     RESOURCE_PREFIX /
     SOURCES src/imagemodel.h src/imagemodel.cpp
     SOURCES src/imageitem.h src/imageitem.cpp
+    QML_FILES src/DoubleSpinBox.qml
     )
 include_directories(src)
 target_compile_features(aruco_viewer PUBLIC cxx_std_17)

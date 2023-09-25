@@ -332,26 +332,26 @@ static void _detectInitialCandidates(const Mat &grey, vector<vector<Point2f>> &c
     vector<vector<vector<Point>>> contoursArrays((size_t)nScales);
 
     ////for each value in the interval of thresholding window sizes
-    parallel_for_(Range(0, nScales), [&](const Range &range) {
-        const int begin = range.start;
-        const int end = range.end;
+    // parallel_for_(Range(0, nScales), [&](const Range &range) {
+    const int begin = 0;
+    const int end = nScales;
 
-        for (int i = begin; i < end; i++)
-        {
-            int currScale = params->adaptiveThreshWinSizeMin + i * params->adaptiveThreshWinSizeStep;
-            // threshold
-            Mat thresh;
-            _threshold(grey, thresh, currScale, params->adaptiveThreshConstant);
-            cv::Mat bgr_thresh;
-            cv::cvtColor(thresh, bgr_thresh, cv::COLOR_GRAY2BGR);
-            TestImages::getInstance().addImg("threshold", bgr_thresh);
+    for (int i = begin; i < end; i++)
+    {
+        int currScale = params->adaptiveThreshWinSizeMin + i * params->adaptiveThreshWinSizeStep;
+        // threshold
+        Mat thresh;
+        _threshold(grey, thresh, currScale, params->adaptiveThreshConstant);
+        cv::Mat bgr_thresh;
+        cv::cvtColor(thresh, bgr_thresh, cv::COLOR_GRAY2BGR);
+        TestImages::getInstance().addImg("threshold", bgr_thresh);
 
-            // detect rectangles
-            _findMarkerContours(thresh, candidatesArrays[i], contoursArrays[i], params->minMarkerPerimeterRate,
-                                params->maxMarkerPerimeterRate, params->polygonalApproxAccuracyRate,
-                                params->minCornerDistanceRate, params->minDistanceToBorder);
-        }
-    });
+        // detect rectangles
+        _findMarkerContours(thresh, candidatesArrays[i], contoursArrays[i], params->minMarkerPerimeterRate,
+                            params->maxMarkerPerimeterRate, params->polygonalApproxAccuracyRate,
+                            params->minCornerDistanceRate, params->minDistanceToBorder);
+    }
+    //});
 
     // join candidates
     for (int i = 0; i < nScales; i++)

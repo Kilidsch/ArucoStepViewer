@@ -31,6 +31,8 @@ qt_add_qml_module(aruco_viewer
     SOURCES src/imagemodel.h src/imagemodel.cpp
     SOURCES src/imageitem.h src/imageitem.cpp
     QML_FILES src/DoubleSpinBox.qml
+    QML_FILES src/ArucoDetectorParams.qml
+    SOURCES src/arucoparamscontroller.h src/arucoparamscontroller.cpp
     )
 include_directories(src)
 target_compile_features(aruco_viewer PUBLIC cxx_std_17)

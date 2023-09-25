@@ -6,7 +6,7 @@ SpinBox {
     from: 0
     value: decimalToInt(1.1)
     to: decimalToInt(100)
-    stepSize: decimalFactor
+    stepSize: 1
     editable: true
 
     property int decimals: 2

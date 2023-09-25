@@ -29,7 +29,7 @@ QVariant ImageModel::data(const QModelIndex &index, int role) const
     {
         auto &img = tab.imgs[0];
         QImage show_img{img.data, img.cols, img.rows, QImage::Format::Format_BGR888};
-        return QVariant(show_img);
+        return QVariant(show_img.copy());
     }
     else if (role == ImageRoles::TabName)
     {
@@ -41,7 +41,7 @@ QVariant ImageModel::data(const QModelIndex &index, int role) const
         for (const auto &cv_img : tab.imgs)
         {
             QImage show_img{cv_img.data, cv_img.cols, cv_img.rows, QImage::Format::Format_BGR888};
-            image_list.push_back(show_img);
+            image_list.push_back(show_img.copy());
         }
         return QVariant(image_list);
     }

@@ -25,9 +25,11 @@ class ImageModel : public QAbstractListModel
 
     void setTabs(const std::vector<Tab> &new_tabs)
     {
-        emit layoutAboutToBeChanged();
+        // Note: we know that the number of tabs/rows never changes
+        // and the name of the tabs does not change either
+        // So emit dataChanged signal instead of beginModelReset...
         m_tabs = new_tabs;
-        emit layoutChanged();
+        emit dataChanged(index(0), index(static_cast<int>(m_tabs.size() - 1)), {ImageListRole, ImageRole});
     }
 
   private:
@@ -35,7 +37,7 @@ class ImageModel : public QAbstractListModel
 
     // QAbstractItemModel interface
   public:
-    QHash<int, QByteArray> roleNames() const;
+    QHash<int, QByteArray> roleNames() const override;
 };
 
 #endif // IMAGEMODEL_H

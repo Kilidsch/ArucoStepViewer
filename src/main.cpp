@@ -9,6 +9,7 @@
 #include "aruco.h"
 #include "imagemodel.h"
 
+#include "arucoparamscontroller.h"
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -29,7 +30,7 @@
 //    cv::cvtColor(img, rgbImg, cv::COLOR_BGR2RGB);
 //    cbData->win.init(TestImages::getInstance().getTabs());
 //}
-
+#include <QTimer>
 int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 {
     QGuiApplication app(argc, argv);
@@ -54,10 +55,19 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 
     model.setTabs(TestImages::getInstance().getTabs());
 
-    std::cerr << "Model row cound: " << model.rowCount() << "\n";
+    ArucoParamsController arucoController;
+    QObject::connect(&arucoController, &ArucoParamsController::paramsChanged, [&]() {
+        // re-run with new parameters; images are reset in simulateDetectMarkers
+        auto params = arucoController.getParams();
+        auto parameters = std::make_shared<cv::aruco::DetectorParameters>(params);
+        simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+        // model updates the UI
+        model.setTabs(TestImages::getInstance().getTabs());
+    });
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("ImageModel", &model);
+    engine.rootContext()->setContextProperty("_aruco", &arucoController);
     engine.load(QUrl("qrc:/stepviewer/src/main.qml"));
     return app.exec();
 

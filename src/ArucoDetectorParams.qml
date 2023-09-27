@@ -9,69 +9,53 @@ ColumnLayout {
         Layout.alignment: Qt.AlignHCenter
     }
 
-    Grid {
+    Column
+    {
+        id: thresh_col
         width: parent.width
-        columns: 2
-        Label {
-            text: "Min. win. size: "
-        }
-        SpinBox {
-            id: thresh_win_min
-            from: 3
-            to: 255
-            value: _aruco.thresh_win_min
-        }
-        Binding {
-            target: _aruco
-            property: "thresh_win_min"
-            value: thresh_win_min.value
-        }
-
-        Label {
-            text: "Max. win. size: "
-        }
-        SpinBox {
-            id: thresh_win_max
-            from: 4
-            to: 255
-            value: _aruco.thresh_win_max
-        }
-        Binding {
-            target: _aruco
-            property: "thresh_win_max"
-            value: thresh_win_max.value
+        Layout.alignment: Qt.AlignHCenter
+        Component.onCompleted: {
+            var max = 0;
+            for (var i = 0; i < thresh_col.children.length; ++i)
+            {
+                if (thresh_col.children[i].label_width > max) {
+                    max = thresh_col.children[i].label_width
+                }
+            }
+            for (var i = 0; i < thresh_col.children.length; ++i)
+            {
+                thresh_col.children[i].label_width = max;
+            }
         }
 
-        Label {
-            text: "Size step: "
-        }
-        SpinBox {
-            id: thresh_win_step
-            from: 1
-            to: 255
-            value: _aruco.thresh_win_step
-        }
-        Binding {
-            target: _aruco
-            property: "thresh_win_step"
-            value: thresh_win_step.value
+        DoubleParameter {
+            parameter: "thresh_const"
+            param_value: _aruco.thresh_const
+            label:  "Thresh. const."
+            tooltip: "constant for adaptive thresholding before finding contours"
         }
 
+        IntegerParameter {
+            parameter: "thresh_win_max"
+            param_value: _aruco.thresh_win_max
+            label: "Max. win. size: "
+            tooltip: "maximum window size for adaptive thresholding before finding contours"
+        }
 
-        Label {
-            text: "Thresh. const."
+        IntegerParameter {
+            parameter: "thresh_win_min"
+            param_value: _aruco.thresh_win_min
+            label: "Min. win. size: "
+            tooltip: "minimum window size for adaptive thresholding before finding contours "
         }
-        DoubleSpinBox {
-            id: thresh_const
-            from: 0
-            to: 999999
-            value: _aruco.thresh_const * decimalFactor
+
+        IntegerParameter {
+            parameter: "thresh_win_step"
+            param_value: _aruco.thresh_win_step
+            label: "Size step: "
+            tooltip: "increments from adaptiveThreshWinSizeMin to adaptiveThreshWinSizeMax during the thresholding "
         }
-        Binding {
-            target: _aruco
-            property: "thresh_const"
-            value: thresh_const.value / thresh_const.decimalFactor
-        }
+
     }
 
     Label {
@@ -79,83 +63,58 @@ ColumnLayout {
         Layout.alignment: Qt.AlignHCenter
     }
 
-    Grid {
+    Column
+    {
+        id: filter_col
         width: parent.width
-        columns: 2
-        Label {
-            text: "Min. perimeter: "
-        }
-        DoubleSpinBox {
-            id: perimeter_min
-            from: 0
-            to: 255
-            value: _aruco.minMarkerPerimeterRate * decimalFactor
-        }
-        Binding {
-            target: _aruco
-            property: "minMarkerPerimeterRate"
-            value: perimeter_min.value / perimeter_min.decimalFactor
-        }
-
-
-        Label {
-            text: "Max. perimeter: "
-        }
-        DoubleSpinBox {
-            id: perimeter_max
-            from: 1
-            to: 99999
-            value: _aruco.maxMarkerPerimeterRate * decimalFactor
-        }
-        Binding {
-            target: _aruco
-            property: "maxMarkerPerimeterRate"
-            value: perimeter_max.value / perimeter_max.decimalFactor
+        Layout.alignment: Qt.AlignHCenter
+        Component.onCompleted: {
+            var max = 0;
+            for (var i = 0; i < filter_col.children.length; ++i)
+            {
+                if (filter_col.children[i].label_width > max) {
+                    max = filter_col.children[i].label_width
+                }
+            }
+            for (var i = 0; i < filter_col.children.length; ++i)
+            {
+                filter_col.children[i].label_width = max;
+            }
         }
 
-        Label {
-            text: "Min. corner dist: "
-        }
-        DoubleSpinBox {
-            id: min_corner_dist
-            from: 0
-            to: 99999
-            value: _aruco.minCornerDistanceRate * decimalFactor
-        }
-        Binding {
-            target: _aruco
-            property: "minCornerDistanceRate"
-            value: min_corner_dist.value / min_corner_dist.decimalFactor
+        DoubleParameter {
+            parameter: "maxMarkerPerimeterRate"
+            param_value: _aruco.maxMarkerPerimeterRate
+            label: "Max. perimeter: "
+            tooltip: "determine maximum perimeter for marker contour to be detected"
         }
 
-        Label {
-            text: "Poly. approx. rate: "
-        }
-        DoubleSpinBox {
-            id: poly_approx
-            from: 0
-            to: 99999
-            value: _aruco.polygonalApproxAccuracyRate * decimalFactor
-        }
-        Binding {
-            target: _aruco
-            property: "polygonalApproxAccuracyRate"
-            value: poly_approx.value / poly_approx.decimalFactor
+        DoubleParameter {
+            parameter: "minMarkerPerimeterRate"
+            param_value: _aruco.minMarkerPerimeterRate
+            label: "Min. perimeter: "
+            tooltip: "determine minimum perimeter for marker contour to be detected"
         }
 
-        Label {
-            text: "Min. marker dist. rate: "
+        DoubleParameter {
+            parameter: "minCornerDistanceRate"
+            param_value: _aruco.minCornerDistanceRate
+            label: "Min. corner dist: "
+            tooltip: "minimum distance between corners for detected markers relative to its perimeter"
         }
-        DoubleSpinBox {
-            id: min_marker_dist
-            from: 0
-            to: 99999
-            value: _aruco.minMarkerDistanceRate * decimalFactor
+
+        DoubleParameter {
+            parameter: "polygonalApproxAccuracyRate"
+            param_value: _aruco.polygonalApproxAccuracyRate
+            label: "Poly. approx. rate: "
+            tooltip: "minimum accuracy during the polygonal approximation process to determine which contours are squares"
         }
-        Binding {
-            target: _aruco
-            property: "minMarkerDistanceRate"
-            value: min_marker_dist.value / min_marker_dist.decimalFactor
+
+        DoubleParameter {
+            parameter: "minMarkerDistanceRate"
+            param_value: _aruco.minMarkerDistanceRate
+            label: "Min. marker dist. rate: "
+            tooltip: "minimum mean distance beetween two marker corners to be considered imilar, so that the smaller one is removed"
         }
     }
 }

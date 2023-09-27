@@ -33,6 +33,8 @@ qt_add_qml_module(aruco_viewer
     QML_FILES src/DoubleSpinBox.qml
     QML_FILES src/ArucoDetectorParams.qml
     SOURCES src/arucoparamscontroller.h src/arucoparamscontroller.cpp
+    QML_FILES src/DoubleParameter.qml
+    QML_FILES src/IntegerParameter.qml
     )
 include_directories(src)
 target_compile_features(aruco_viewer PUBLIC cxx_std_17)
@@ -46,4 +48,4 @@ endif (APPLE)
 
 target_compile_options(aruco_viewer PRIVATE ${COMMON_COMPILE_OPTIONS})
 
-target_sources(aruco_viewer PRIVATE src/main.cpp   src/aruco.cpp src/aruco.h src/testimages.h src/testimages.cpp)
+target_sources(aruco_viewer PRIVATE src/main.cpp src/aruco.cpp src/aruco.h src/testimages.h src/testimages.cpp)

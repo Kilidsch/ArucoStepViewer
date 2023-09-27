@@ -11,10 +11,6 @@ Item {
     property string tooltip
     property alias label_width: label.width
 
-    Component.onCompleted: {
-        print(label + param_value)
-    }
-
     Row{
         Label {
             id: label

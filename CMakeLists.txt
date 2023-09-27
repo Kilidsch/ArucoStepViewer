@@ -17,7 +17,6 @@ list(APPEND COMMON_COMPILE_OPTIONS
 find_package(OpenCV REQUIRED)
 message(STATUS "Using OpenCV version ${OpenCV_VERSION}")
 message(STATUS "${OpenCV_LIBS}")
-find_package(FLTK CONFIG REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Gui Qml Quick QuickControls2)
 qt_standard_project_setup()
 
@@ -36,16 +35,9 @@ qt_add_qml_module(aruco_viewer
     QML_FILES src/DoubleParameter.qml
     QML_FILES src/IntegerParameter.qml
     )
+
 include_directories(src)
 target_compile_features(aruco_viewer PUBLIC cxx_std_17)
-target_link_libraries(aruco_viewer PRIVATE ${OpenCV_LIBS} fltk fltk_gl fltk_forms fltk_images Qt::Qml Qt::Quick Qt::Gui Qt::QuickControls2)
-target_include_directories(aruco_viewer PRIVATE ${FLTK_INCLUDE_DIRS})
-
-# FLTK needs this
-if (APPLE)
-  target_link_libraries(hello "-framework cocoa")
-endif (APPLE)
-
+target_link_libraries(aruco_viewer PRIVATE ${OpenCV_LIBS} Qt::Qml Qt::Quick Qt::Gui Qt::QuickControls2)
 target_compile_options(aruco_viewer PRIVATE ${COMMON_COMPILE_OPTIONS})
-
 target_sources(aruco_viewer PRIVATE src/main.cpp src/aruco.cpp src/aruco.h src/testimages.h src/testimages.cpp)

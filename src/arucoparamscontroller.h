@@ -1,7 +1,6 @@
 #ifndef ARUCOPARAMSCONTROLLER_H
 #define ARUCOPARAMSCONTROLLER_H
 
-#include <QDebug>
 #include <QObject>
 #include <opencv2/aruco.hpp>
 
@@ -31,163 +30,37 @@ class ArucoParamsController : public QObject
   public:
     explicit ArucoParamsController(QObject *parent = nullptr);
 
-    cv::aruco::DetectorParameters getParams() const
-    {
-        return m_params;
-    }
+    cv::aruco::DetectorParameters getParams() const;
 
-    double adaptiveThreshConstant() const
-    {
-        return m_params.adaptiveThreshConstant;
-    }
+    double adaptiveThreshConstant() const;
+    void setAdaptiveThreshConstant(double newVal);
 
-    void setAdaptiveThreshConstant(double newVal)
-    {
-        if (m_params.adaptiveThreshConstant == newVal)
-        {
-            return;
-        }
-        m_params.adaptiveThreshConstant = newVal;
-        emit adaptiveThreshConstantChanged();
-    }
+    int adaptiveThreshWinSizeMax() const;
+    void setAdaptiveThreshWinSizeMax(int newVal);
 
-    int adaptiveThreshWinSizeMax() const
-    {
-        return m_params.adaptiveThreshWinSizeMax;
-    }
+    int adaptiveThreshWinSizeMin() const;
+    void setAdaptiveThreshWinSizeMin(int newVal);
 
-    void setAdaptiveThreshWinSizeMax(int newVal)
-    {
-        if (m_params.adaptiveThreshWinSizeMax == newVal)
-        {
-            return;
-        }
-        m_params.adaptiveThreshWinSizeMax = newVal;
-        emit adaptiveThreshWinSizeMaxChanged();
-    }
+    int adaptiveThreshWinSizeStep() const;
+    void setAdaptiveThreshWinSizeStep(int newVal);
 
-    int adaptiveThreshWinSizeMin() const
-    {
-        return m_params.adaptiveThreshWinSizeMin;
-    }
+    double minCornerDistanceRate() const;
+    void setMinCornerDistanceRate(double newVal);
 
-    void setAdaptiveThreshWinSizeMin(int newVal)
-    {
-        if (m_params.adaptiveThreshWinSizeMin == newVal)
-        {
-            return;
-        }
-        m_params.adaptiveThreshWinSizeMin = newVal;
-        emit adaptiveThreshWinSizeMinChanged();
-    }
+    double minMarkerDistanceRate();
+    void setMinMarkerDistanceRate(double newVal);
 
-    int adaptiveThreshWinSizeStep() const
-    {
-        return m_params.adaptiveThreshWinSizeStep;
-    }
+    double maxMarkerPerimeterRate() const;
+    void setMaxMarkerPerimeterRate(double newVal);
 
-    void setAdaptiveThreshWinSizeStep(int newVal)
-    {
-        if (m_params.adaptiveThreshWinSizeStep == newVal)
-        {
-            return;
-        }
-        m_params.adaptiveThreshWinSizeStep = newVal;
-        emit adaptiveThreshWinSizeStepChanged();
-    }
+    double minMarkerPerimeterRate() const;
+    void setMinMarkerPerimeterRate(double newVal);
 
-    double minCornerDistanceRate() const
-    {
-        return m_params.minCornerDistanceRate;
-    }
+    int minDistanceToBorder() const;
+    void setMinDistanceToBorder(int newVal);
 
-    void setMinCornerDistanceRate(double newVal)
-    {
-        if (m_params.minCornerDistanceRate == newVal)
-        {
-            return;
-        }
-        m_params.minCornerDistanceRate = newVal;
-        emit minCornerDistanceRateChanged();
-    }
-
-    double minMarkerDistanceRate()
-    {
-        return m_params.minMarkerDistanceRate;
-    }
-
-    void setMinMarkerDistanceRate(double newVal)
-    {
-        if (m_params.minMarkerDistanceRate == newVal)
-        {
-            return;
-        }
-
-        m_params.minMarkerDistanceRate = newVal;
-        emit minMarkerDistanceRateChanged();
-    }
-
-    double maxMarkerPerimeterRate() const
-    {
-        return m_params.maxMarkerPerimeterRate;
-    }
-
-    void setMaxMarkerPerimeterRate(double newVal)
-    {
-        if (m_params.maxMarkerPerimeterRate == newVal)
-        {
-            return;
-        }
-        m_params.maxMarkerPerimeterRate = newVal;
-        emit maxMarkerPerimeterRateChanged();
-    }
-
-    double minMarkerPerimeterRate() const
-    {
-        return m_params.minMarkerPerimeterRate;
-    }
-
-    void setMinMarkerPerimeterRate(double newVal)
-    {
-        if (m_params.minMarkerPerimeterRate == newVal)
-        {
-            return;
-        }
-        m_params.minMarkerPerimeterRate = newVal;
-        emit minMarkerPerimeterRateChanged();
-    }
-
-    int minDistanceToBorder() const
-    {
-        return m_params.minDistanceToBorder;
-    }
-
-    void setMinDistanceToBorder(int newVal)
-    {
-        if (m_params.minDistanceToBorder == newVal)
-        {
-            return;
-        }
-        m_params.minDistanceToBorder = newVal;
-        emit minDistanceToBorderChanged();
-    }
-
-    double polygonalApproxAccuracyRate() const
-    {
-        return m_params.polygonalApproxAccuracyRate;
-    }
-
-    void setPolygonalApproxAccuracyRate(double newVal)
-    {
-        if (m_params.polygonalApproxAccuracyRate == newVal)
-        {
-            return;
-        }
-        m_params.polygonalApproxAccuracyRate = newVal;
-        qDebug() << "New value plymoly " << newVal;
-
-        emit polygonalApproxAccuracyRateChanged();
-    }
+    double polygonalApproxAccuracyRate() const;
+    void setPolygonalApproxAccuracyRate(double newVal);
 
   signals:
     void adaptiveThreshConstantChanged();

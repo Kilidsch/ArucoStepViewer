@@ -19,6 +19,8 @@ int ImageModel::rowCount(const QModelIndex &parent) const
 
 QVariant ImageModel::data(const QModelIndex &index, int role) const
 {
+    std::unique_lock lock(m_tab_mut);
+
     Q_UNUSED(role)
     if (!index.isValid())
     {

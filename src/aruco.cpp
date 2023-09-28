@@ -943,6 +943,8 @@ void simulateDetectMarkers(InputArray _image, const Ptr<Dictionary> &_dictionary
         }
     }
 
+    cv::aruco::drawDetectedMarkers(bgr_grey, candidates, ids);
+    TestImages::getInstance().addImg("Result", bgr_grey);
     std::cout << "Detected ids:\n";
     for (int id : ids)
     {

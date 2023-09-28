@@ -13,6 +13,7 @@
 #include <QQuickStyle>
 
 #include <opencv2/videoio.hpp>
+#include <string>
 #include <thread>
 
 enum class InputType
@@ -43,7 +44,16 @@ class Source
             }
             break;
         case InputType::Video:
-            m_capture = cv::VideoCapture(path);
+            // special support for "0" as 0, i.e. first camera
+            if (path == "0")
+            {
+
+                m_capture = cv::VideoCapture(0);
+            }
+            else
+            {
+                m_capture = cv::VideoCapture(path);
+            }
             if (!m_capture.isOpened())
             {
                 std::stringstream ss;
@@ -146,6 +156,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
         break;
     case InputType::Video:
         // When video(stream), rerun on every new frame
+        // TODO: kill thread (std::stop_token?) when window is closed
         thread = std::jthread([&]() {
             while (true)
             {

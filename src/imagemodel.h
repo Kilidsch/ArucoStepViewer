@@ -3,6 +3,7 @@
 
 #include "testimages.h"
 #include <QAbstractListModel>
+#include <mutex>
 
 class ImageModel : public QAbstractListModel
 {
@@ -23,17 +24,11 @@ class ImageModel : public QAbstractListModel
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    void setTabs(const std::vector<Tab> &new_tabs)
-    {
-        // Note: we know that the number of tabs/rows never changes
-        // and the name of the tabs does not change either
-        // So emit dataChanged signal instead of beginModelReset...
-        m_tabs = new_tabs;
-        emit dataChanged(index(0), index(static_cast<int>(m_tabs.size() - 1)), {ImageListRole, ImageRole});
-    }
+    void setTabs(const std::vector<Tab> &new_tabs);
 
   private:
     std::vector<Tab> m_tabs;
+    mutable std::mutex m_tab_mut;
 
     // QAbstractItemModel interface
   public:

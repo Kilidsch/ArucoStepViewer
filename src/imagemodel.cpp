@@ -9,8 +9,9 @@ ImageModel::ImageModel(QObject *parent)
 
 int ImageModel::rowCount(const QModelIndex &parent) const
 {
-    // For list models only the root node (an invalid parent) should return the list's size. For all
-    // other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
+    // std::unique_lock lock(m_tab_mut);
+    //  For list models only the root node (an invalid parent) should return the list's size. For all
+    //  other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
     if (parent.isValid())
         return 0;
     return static_cast<int>(m_tabs.size());
@@ -49,6 +50,16 @@ QVariant ImageModel::data(const QModelIndex &index, int role) const
     {
         return QVariant();
     }
+}
+
+void ImageModel::setTabs(const std::vector<Tab> &new_tabs)
+{
+    std::unique_lock lock(m_tab_mut);
+    // Note: we know that the number of tabs/rows never changes
+    // and the name of the tabs does not change either
+    // So emit dataChanged signal instead of beginModelReset...
+    m_tabs = new_tabs;
+    emit dataChanged(index(0), index(static_cast<int>(m_tabs.size() - 1)), {ImageListRole, ImageRole});
 }
 
 QHash<int, QByteArray> ImageModel::roleNames() const

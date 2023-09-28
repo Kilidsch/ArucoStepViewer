@@ -37,7 +37,7 @@ qt_add_qml_module(aruco_viewer
     )
 
 include_directories(src)
-target_compile_features(aruco_viewer PUBLIC cxx_std_17)
+target_compile_features(aruco_viewer PUBLIC cxx_std_20)
 target_link_libraries(aruco_viewer PRIVATE ${OpenCV_LIBS} Qt::Qml Qt::Quick Qt::Gui Qt::QuickControls2)
 target_compile_options(aruco_viewer PRIVATE ${COMMON_COMPILE_OPTIONS})
 target_sources(aruco_viewer PRIVATE src/main.cpp src/aruco.cpp src/aruco.h src/testimages.h src/testimages.cpp)

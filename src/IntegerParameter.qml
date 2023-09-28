@@ -29,6 +29,7 @@ Item {
             from: 0
             to: 99999
             value: item.param_value
+            editable: true
             ToolTip.visible: hovered
             ToolTip.delay: 1000
             ToolTip.text: item.tooltip

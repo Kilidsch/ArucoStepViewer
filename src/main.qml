@@ -13,6 +13,7 @@ ApplicationWindow {
     TabBar {
         id: bar
         width: parent.width
+
         Repeater {
             model: ImageModel
             delegate: TabButton {
@@ -47,10 +48,26 @@ ApplicationWindow {
                     TabBar {
                         id: sub_bar
                         width: parent.width
+
+                        // extra lgic and bookkeeping to stay at selected tab after
+                        // recopmutation with new params/image
+                        property int oldIndex: 0
+                        property var model: image_list
+                        onModelChanged: {
+                            if(oldIndex >= contentChildren.length){
+                                oldIndex = contentChildren.length - 1
+                            }
+
+                            currentIndex = oldIndex
+                        }
+
                         Repeater {
                             model: image_list
                             delegate: TabButton {
                                 text: index
+                                Component.onDestruction: {
+                                    sub_bar.oldIndex = sub_bar.currentIndex
+                                }
                             }
                         }
                     }

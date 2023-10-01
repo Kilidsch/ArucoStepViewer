@@ -13,11 +13,11 @@
 #include <QQmlContext>
 #include <QQuickStyle>
 
+#include <atomic>
+#include <chrono>
 #include <opencv2/videoio.hpp>
-#include <semaphore>
 #include <string>
 #include <thread>
-#include <chrono>
 
 using namespace std::chrono_literals;
 
@@ -78,6 +78,7 @@ class Source
             return m_img.clone();
 
         case InputType::Video:
+            // TODO: add throttling for video-files (camera stream does not need it)
             m_capture.read(m_img);
             if (m_img.empty())
             {
@@ -144,39 +145,41 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 
     ArucoParamsController arucoController;
 
-    // thread used for reading video in case of using video
     std::jthread thread;
-    std::binary_semaphore sem(0);
+    std::atomic<cv::aruco::DetectorParameters> curr_params;
+    curr_params.store(arucoController.getParams());
     switch (type)
     {
     case InputType::Image:
         // When using an image, rerun on every change of parameters
-        thread = std::jthread([&]() {
-            while (true)
+        thread = std::jthread([&](std::stop_token stoken) {
+            while (!stoken.stop_requested())
             {
-                sem.acquire();
                 // re-run with new parameters; images are reset in simulateDetectMarkers
-                auto params = arucoController.getParams();
+                auto params = curr_params.load();
                 auto parameters = std::make_shared<cv::aruco::DetectorParameters>(params);
                 simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
                 // model updates the UI
                 model.setTabs(TestImages::getInstance().getTabs());
+
+                curr_params.wait(params);
             }
         });
         QObject::connect(&arucoController, &ArucoParamsController::paramsChanged, [&]() {
-            sem.release();
+            curr_params.store(arucoController.getParams());
+            curr_params.notify_all();
         });
         break;
     case InputType::Video:
         // When video(stream), rerun on every new frame
         // TODO: kill thread (std::stop_token?) when window is closed
-        thread = std::jthread([&]() {
-            while (true)
+        thread = std::jthread([&](std::stop_token stoken) {
+            while (!stoken.stop_requested())
             {
                 // getImg is a blocking call and limits the speed of this thread
                 // no manual throttling is done
                 auto img = source.getImg();
-                auto params = arucoController.getParams();
+                auto params = curr_params.load();
                 auto parameters = std::make_shared<cv::aruco::DetectorParameters>(params);
                 simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
                 // model updates the UI
@@ -185,6 +188,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
         });
         break;
     }
+    QObject::connect(&app, &QGuiApplication::aboutToQuit, [&thread, &curr_params]() {
+        thread.request_stop();
+        // small hack; change curr_params, so we can make the image thread check the stop_token again
+        cv::aruco::DetectorParameters impossible_params;
+        impossible_params.adaptiveThreshWinSizeMax = 1;
+        impossible_params.adaptiveThreshWinSizeMin = 3;
+        curr_params = impossible_params;
+        curr_params.notify_all();
+    });
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("ImageModel", &model);

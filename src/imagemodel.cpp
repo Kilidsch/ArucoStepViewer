@@ -9,7 +9,7 @@ ImageModel::ImageModel(QObject *parent)
 
 int ImageModel::rowCount(const QModelIndex &parent) const
 {
-    // std::unique_lock lock(m_tab_mut);
+    std::unique_lock lock(m_tab_mut);
     //  For list models only the root node (an invalid parent) should return the list's size. For all
     //  other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
     if (parent.isValid())

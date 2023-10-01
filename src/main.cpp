@@ -1,5 +1,6 @@
 #include <iostream>
 #include <opencv2/aruco.hpp>
+#include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
 
 #include "aruco.h" // for simulateDetectMarkers
@@ -13,8 +14,12 @@
 #include <QQuickStyle>
 
 #include <opencv2/videoio.hpp>
+#include <semaphore>
 #include <string>
 #include <thread>
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 enum class InputType
 {
@@ -141,17 +146,25 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 
     // thread used for reading video in case of using video
     std::jthread thread;
+    std::binary_semaphore sem(0);
     switch (type)
     {
     case InputType::Image:
         // When using an image, rerun on every change of parameters
+        thread = std::jthread([&]() {
+            while (true)
+            {
+                sem.acquire();
+                // re-run with new parameters; images are reset in simulateDetectMarkers
+                auto params = arucoController.getParams();
+                auto parameters = std::make_shared<cv::aruco::DetectorParameters>(params);
+                simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+                // model updates the UI
+                model.setTabs(TestImages::getInstance().getTabs());
+            }
+        });
         QObject::connect(&arucoController, &ArucoParamsController::paramsChanged, [&]() {
-            // re-run with new parameters; images are reset in simulateDetectMarkers
-            auto params = arucoController.getParams();
-            auto parameters = std::make_shared<cv::aruco::DetectorParameters>(params);
-            simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
-            // model updates the UI
-            model.setTabs(TestImages::getInstance().getTabs());
+            sem.release();
         });
         break;
     case InputType::Video:

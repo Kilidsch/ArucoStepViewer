@@ -11,4 +11,7 @@ recreated is 4.5.5 (note that the aruco detection was reworked since then)
 > [!NOTE]  
 > Does (currently) not work with AprilTag
 
+> [!NOTE]
+> When showing a video, changing the threshold level is more responsive using the keyboard
+
 This code is licensed under the Apache 2.0 license.

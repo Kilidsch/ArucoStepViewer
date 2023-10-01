@@ -68,7 +68,7 @@ static void _findMarkerContours(InputArray _in, vector<vector<Point2f>> &candida
     cv::cvtColor(contoursImg, bgr_contours, cv::COLOR_GRAY2BGR);
     cv::Mat contour_drawn = bgr_contours.clone();
     cv::drawContours(contour_drawn, contours, -1, cv::Scalar(0, 0, 255), 1);
-    TestImages::getInstance().addImg("contours", contour_drawn);
+    TestImages::getInstance().addImg("all contours", contour_drawn);
     Contours after_perimeter;
     Contours after_approx_curve;
     Contours after_min_dist;
@@ -132,10 +132,10 @@ static void _findMarkerContours(InputArray _in, vector<vector<Point2f>> &candida
         cv::drawContours(contour_drawn, conts, -1, cv::Scalar(0, 0, 255), 1);
         TestImages::getInstance().addImg(name, contour_drawn);
     };
-    draw_conts("perimeter", after_perimeter);
-    draw_conts("approx. curve", after_approx_curve);
-    draw_conts("min. distance", after_min_dist);
-    draw_conts("near border", after_near_border);
+    draw_conts("after perimeter", after_perimeter);
+    draw_conts("after approx. curve", after_approx_curve);
+    draw_conts("after min. distance", after_min_dist);
+    draw_conts("after near border", after_near_border);
 }
 
 /**

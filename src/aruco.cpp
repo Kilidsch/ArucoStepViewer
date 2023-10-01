@@ -1,5 +1,6 @@
 /**
- * To large extend code copied from aruco module of OpenCV
+ * This codefile is a modified version of aruco.cpp from OpenCV 4.5.5
+ * That file was licensed under the same license (Apache 2.0).
  */
 
 #include "aruco.h"

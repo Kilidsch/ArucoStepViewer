@@ -58,7 +58,9 @@ ApplicationWindow {
                                 oldIndex = contentChildren.length - 1
                             }
 
-                            currentIndex = oldIndex
+                            if(oldIndex > -1){
+                                currentIndex = oldIndex
+                            }
                         }
 
                         Repeater {

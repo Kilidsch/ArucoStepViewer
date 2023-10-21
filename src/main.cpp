@@ -71,7 +71,7 @@ class Source
 
     cv::Mat getImg()
     {
-
+        std::this_thread::sleep_for(10ms);
         switch (m_type)
         {
         case InputType::Image:

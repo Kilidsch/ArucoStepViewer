@@ -6,8 +6,11 @@
 #include "aruco.h" // for simulateDetectMarkers
 #include "arucoparamscontroller.h"
 #include "imagemodel.h"
+#include "source.h"
 
 #include <QCommandLineParser>
+#include <QDeadlineTimer>
+#include <QElapsedTimer>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -20,75 +23,6 @@
 #include <thread>
 
 using namespace std::chrono_literals;
-
-enum class InputType
-{
-    Image,
-    Video
-};
-
-class Source
-{
-    InputType m_type;
-    cv::VideoCapture m_capture;
-    cv::Mat m_img;
-
-  public:
-    Source(InputType type, std::string path) : m_type(type)
-    {
-
-        switch (m_type)
-        {
-        case InputType::Image:
-            m_img = cv::imread(path);
-            if (m_img.empty())
-            {
-                std::stringstream ss;
-                ss << "Could not open image (" << path << ")!";
-                throw std::runtime_error(ss.str());
-            }
-            break;
-        case InputType::Video:
-            // special support for "0" as 0, i.e. first camera
-            if (path == "0")
-            {
-
-                m_capture = cv::VideoCapture(0);
-            }
-            else
-            {
-                m_capture = cv::VideoCapture(path);
-            }
-            if (!m_capture.isOpened())
-            {
-                std::stringstream ss;
-                ss << "Could not open video(stream) (" << path << ")!";
-                throw std::runtime_error(ss.str());
-            }
-            break;
-        }
-    }
-
-    cv::Mat getImg()
-    {
-        std::this_thread::sleep_for(10ms);
-        switch (m_type)
-        {
-        case InputType::Image:
-            return m_img.clone();
-
-        case InputType::Video:
-            // TODO: add throttling for video-files (camera stream does not need it)
-            m_capture.read(m_img);
-            if (m_img.empty())
-            {
-                throw std::runtime_error("Could not read new frame from video(stream)");
-            }
-            return m_img.clone();
-        }
-        throw std::logic_error("getImg did not implement used source");
-    }
-};
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
 {
@@ -172,24 +106,27 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
         break;
     case InputType::Video:
         // When video(stream), rerun on every new frame
-        // TODO: kill thread (std::stop_token?) when window is closed
         thread = std::jthread([&](std::stop_token stoken) {
             while (!stoken.stop_requested())
             {
-                // getImg is a blocking call and limits the speed of this thread
-                // no manual throttling is done
+                QDeadlineTimer timer(20ms);
+                // getImg is a blocking call and can limit the speed of this thread
                 auto img = source.getImg();
                 auto params = curr_params.load();
                 auto parameters = std::make_shared<cv::aruco::DetectorParameters>(params);
                 simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
                 // model updates the UI
                 model.setTabs(TestImages::getInstance().getTabs());
+
+                // throttle thread to 20 ms
+                std::this_thread::sleep_for(timer.remainingTimeAsDuration());
             }
         });
         break;
     }
-    QObject::connect(&app, &QGuiApplication::aboutToQuit, [&thread, &curr_params]() {
+    QObject::connect(&app, &QGuiApplication::aboutToQuit, [&thread, &curr_params, &source]() {
         thread.request_stop();
+        source.requestStop();
         // small hack; change curr_params, so we can make the image thread check the stop_token again
         cv::aruco::DetectorParameters impossible_params;
         impossible_params.adaptiveThreshWinSizeMax = 1;

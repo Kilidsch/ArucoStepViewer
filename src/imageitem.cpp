@@ -20,5 +20,5 @@ void ImageItem::setImg(const QImage &newImg)
         return;
     }
     m_img = newImg;
-    emit imgChanged(newImg);
+    emit imgChanged(m_img);
 }

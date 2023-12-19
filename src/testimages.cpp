@@ -26,5 +26,6 @@ void TestImages::clearTabs()
 
 const std::vector<Tab> &TestImages::getTabs() const
 {
+    std::unique_lock lock(m_mutex);
     return m_tabs;
 }

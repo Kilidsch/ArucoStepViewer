@@ -15,7 +15,7 @@ class TestImages
 {
   private:
     std::vector<Tab> m_tabs;
-    std::mutex m_mutex;
+    mutable std::mutex m_mutex;
 
   public:
     static TestImages &getInstance()

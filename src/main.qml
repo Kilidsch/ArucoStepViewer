@@ -41,6 +41,8 @@ ApplicationWindow {
                 width: parent.width
                 height: parent.height
                 model: ImageModel
+
+
                 delegate: ColumnLayout{
                     width: parent.width
                     height: parent.height
@@ -73,17 +75,12 @@ ApplicationWindow {
                             }
                         }
                     }
-                    StackLayout
-                    {
-                        currentIndex: sub_bar.currentIndex
-                        Repeater {
-                            model: image_list
-                            ImageItem {
-                                img: image_list[index]
-                                Layout.fillHeight: true
-                                Layout.fillWidth: true
-                            }
-                        }
+                    ImageStack{
+                        id: img_stack
+                        index: sub_bar.currentIndex
+                        imgList: image_list
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
                     }
                 }
             }

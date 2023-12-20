@@ -36,6 +36,7 @@ qt_add_qml_module(aruco_viewer
     QML_FILES src/DoubleSpinBox.qml
     QML_FILES src/ArucoDetectorParams.qml
     SOURCES src/arucoparamscontroller.h src/arucoparamscontroller.cpp
+            src/imagestack.h src/imagestack.cpp
     QML_FILES src/DoubleParameter.qml
     QML_FILES src/IntegerParameter.qml
     )

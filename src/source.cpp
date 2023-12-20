@@ -53,8 +53,11 @@ Source::Source(InputType type, std::string path) : m_type(type)
 void Source::pullImage()
 {
     // continously grab frames such that no buffer build up occurs for web streams
-    std::unique_lock lock(m_mut);
     m_capture.grab();
+    if(m_mut.try_lock()){
+        m_capture.retrieve(m_img);
+        m_mut.unlock();
+    }
 }
 
 void Source::requestStop()
@@ -70,17 +73,20 @@ cv::Mat Source::getImg()
         return m_img.clone();
 
     case InputType::Video:
-        std::shared_lock lock(m_mut);
 
         // could be video stream and we wait on key-frame (I-frame)
-        QDeadlineTimer timer(30s);
+        QDeadlineTimer timer(10s);
         bool success = false;
+        cv::Mat return_img;
         do
         {
-            success = m_capture.retrieve(m_img);
-            if (!success)
             {
-                m_capture.grab();
+                std::shared_lock lock(m_mut);
+                success = !m_img.empty();
+                return_img = m_img.clone();
+            }
+            if(!success){
+                std::this_thread::sleep_for(1s);
             }
         } while (!timer.hasExpired() && !success);
 
@@ -89,7 +95,7 @@ cv::Mat Source::getImg()
             throw std::runtime_error("Could not read new frame from video(stream)");
         }
 
-        return m_img.clone();
+        return return_img;
     }
     throw std::logic_error("getImg did not implement used source");
 }

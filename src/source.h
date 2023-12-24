@@ -57,10 +57,10 @@ class VideoSource : public Source{
     cv::Mat m_img;
     cv::VideoCapture m_capture;
     std::chrono::time_point<std::chrono::steady_clock> m_last_call;
-    float m_fps;
+    std::chrono::seconds m_sec_per_frame;
 
   public:
-    VideoSource(const std::string& /*path*/) {};
+    VideoSource(const std::string& path);
     cv::Mat getImg() override;
 };
 

@@ -102,8 +102,35 @@ std::unique_ptr<Source> createSource(InputType type, std::string path)
     }
 }
 
+VideoSource::VideoSource(const std::string &path)
+{
+    std::filesystem::path filepath (path);
+    if(!std::filesystem::exists(filepath)){
+        std::stringstream ss;
+        ss << "File " << path << " does not exist!";
+        throw std::runtime_error(ss.str());
+    }
+
+    m_capture = cv::VideoCapture(path);
+    if(!m_capture.isOpened()){
+        std::stringstream ss;
+        ss << "Could not open " << path;
+        throw std::runtime_error(ss.str());
+    }
+
+    auto fps = m_capture.get(cv::CAP_PROP_FPS);
+    m_sec_per_frame = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>(1 / fps));
+}
+
 cv::Mat VideoSource::getImg()
 {
-    // TODO: implement!
-    return m_img;
+    m_capture.read(m_img);
+
+    // throttle to FPS (note that its throttled to max one frame per 20ms later on as well)
+    auto curr = std::chrono::steady_clock::now();
+    if((curr - m_last_call) < m_sec_per_frame){
+        std::this_thread::sleep_for(m_sec_per_frame - (curr - m_last_call));
+    }
+    m_last_call = curr;
+    return m_img.clone();
 }

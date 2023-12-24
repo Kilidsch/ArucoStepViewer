@@ -41,5 +41,6 @@ void ImageStack::setIndex(int newIndex)
     if (m_index == newIndex)
         return;
     m_index = newIndex;
+    update();
     emit indexChanged();
 }

@@ -117,9 +117,10 @@ std::jthread createComputeThread(std::unique_ptr<Source>& source, InputType type
                 auto parameters = std::make_shared<cv::aruco::DetectorParameters>(params);
                 simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
                 // model updates the UI
-                model.setTabs(TestImages::getInstance().getTabs());
+                auto tabs = TestImages::getInstance().getTabs();
+                model.setTabs(tabs);
 
-                       // throttle thread to 20 ms
+                // throttle thread to 20 ms
                 std::this_thread::sleep_for(timer.remainingTimeAsDuration());
             }
         });
@@ -161,6 +162,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char **argv)
         curr_params = impossible_params;
         curr_params.notify_all();
     });
+
+    // wait till model is initialized, so UI knows which tabs exist
+    while(model.rowCount() < 1){
+        std::this_thread::sleep_for(100ms);
+    }
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("ImageModel", &model);

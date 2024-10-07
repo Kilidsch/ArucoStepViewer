@@ -2,13 +2,15 @@
 
 #include <QPainter>
 
-
 void ImageStack::paint(QPainter *painter)
 {
     QRect target(0, 0, width(), height());
-    if(m_imgList.isEmpty()){
+    if (m_imgList.isEmpty())
+    {
         return;
-    }else{
+    }
+    else
+    {
         assert(m_index >= 0);
         if(m_index >= m_imgList.size()){
             m_index = m_imgList.size() - 1;

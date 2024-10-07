@@ -54,7 +54,7 @@ ApplicationWindow {
                         // extra lgic and bookkeeping to stay at selected tab after
                         // recopmutation with new params/image
                         property int oldIndex: 0
-                        property var model: image_list
+                        property var model: image_list.length
                         onModelChanged: {
                             if(oldIndex >= contentChildren.length){
                                 oldIndex = contentChildren.length - 1
@@ -66,7 +66,7 @@ ApplicationWindow {
                         }
 
                         Repeater {
-                            model: image_list
+                            model: image_list.length
                             delegate: TabButton {
                                 text: index
                                 Component.onDestruction: {
@@ -81,6 +81,16 @@ ApplicationWindow {
                         imgList: image_list
                         Layout.fillHeight: true
                         Layout.fillWidth: true
+
+                        onVisibleChanged: {
+                            // performance problems copying all images for all the tabs all the time
+                            // so only do the work for the currently visible one!
+                            if(visible){
+                                img_stack.imgList = Qt.binding(function() {return image_list;})
+                            }else{
+                                img_stack.imgList = []
+                            }
+                        }
                     }
                 }
             }

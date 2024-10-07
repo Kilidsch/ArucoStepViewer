@@ -117,8 +117,7 @@ std::jthread createComputeThread(std::unique_ptr<Source>& source, InputType type
                 auto parameters = std::make_shared<cv::aruco::DetectorParameters>(params);
                 simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
                 // model updates the UI
-                auto tabs = TestImages::getInstance().getTabs();
-                model.setTabs(tabs);
+                model.setTabs(TestImages::getInstance().getTabs());
 
                 // throttle thread to 20 ms
                 std::this_thread::sleep_for(timer.remainingTimeAsDuration());

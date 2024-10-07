@@ -2,7 +2,8 @@
 
 void TestImages::addImg(const std::string &tab_name, const cv::Mat &img)
 {
-    std::unique_lock lock(m_mutex);
+    std::unique_lock lock(
+        m_mutex); // TODO: still needed? I think I introduced this before I un-multithreaded the aruco code
     // small number of tabs, linear search should be ideal
     // (given tab names aren't huge)
     auto it = std::find_if(m_tabs.begin(), m_tabs.end(),
@@ -14,7 +15,7 @@ void TestImages::addImg(const std::string &tab_name, const cv::Mat &img)
     }
     else
     {
-        it->imgs.push_back(img.clone());
+        it->imgs.emplace_back(img.clone());
     }
 }
 

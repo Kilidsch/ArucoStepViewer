@@ -27,8 +27,9 @@ class ImageModel : public QAbstractListModel
     void setTabs(const std::vector<Tab> &new_tabs);
 
   private:
-    std::vector<Tab> m_tabs;
-    mutable std::recursive_mutex m_tab_mut;
+    std::array<std::vector<Tab>, 2> m_tabs;
+    std::atomic<size_t> m_current_tab = 0;
+    std::mutex m_tab_mut;
 
     // QAbstractItemModel interface
   public:

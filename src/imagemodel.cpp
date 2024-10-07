@@ -9,17 +9,17 @@ ImageModel::ImageModel(QObject *parent)
 
 int ImageModel::rowCount(const QModelIndex &parent) const
 {
-    std::unique_lock lock(m_tab_mut);
-    //  For list models only the root node (an invalid parent) should return the list's size. For all
-    //  other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
+    // std::unique_lock lock(m_tab_mut);
+    //   For list models only the root node (an invalid parent) should return the list's size. For all
+    //   other (valid) parents, rowCount() should return 0 so that it does not become a tree model.
     if (parent.isValid())
         return 0;
-    return static_cast<int>(m_tabs.size());
+    return static_cast<int>(m_tabs[m_current_tab.load()].size());
 }
 
 QVariant ImageModel::data(const QModelIndex &index, int role) const
 {
-    std::unique_lock lock(m_tab_mut);
+    // std::unique_lock lock(m_tab_mut);
 
     Q_UNUSED(role)
     if (!index.isValid())
@@ -27,7 +27,7 @@ QVariant ImageModel::data(const QModelIndex &index, int role) const
         return QVariant();
     }
 
-    const auto &tab = m_tabs[index.row()];
+    const auto &tab = m_tabs[m_current_tab.load()][index.row()];
     if (role == ImageRoles::ImageRole)
     {
         auto &img = tab.imgs[0];
@@ -61,9 +61,20 @@ void ImageModel::setTabs(const std::vector<Tab> &new_tabs)
         // Note: we know that the number of tabs/rows never changes
         // and the name of the tabs does not change either
         // So emit dataChanged signal instead of beginModelReset...
-        m_tabs = new_tabs;
+        if (m_current_tab.load() == 0)
+        {
+            m_tabs[1] = new_tabs;
+            m_current_tab.store(1);
+        }
+        else
+        {
+            m_tabs[0] = new_tabs;
+            m_current_tab.store(0);
+        }
     }
-    emit dataChanged(index(0), index(static_cast<int>(m_tabs.size() - 1)), {ImageListRole, ImageRole});
+    // emit dataChanged(index(0), index(static_cast<int>(1)), {ImageListRole, ImageRole});
+    emit dataChanged(index(0), index(static_cast<int>(m_tabs[m_current_tab.load()].size() - 1)),
+                     {ImageListRole, ImageRole});
 }
 
 QHash<int, QByteArray> ImageModel::roleNames() const

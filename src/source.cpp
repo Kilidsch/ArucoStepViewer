@@ -128,7 +128,8 @@ cv::Mat VideoSource::getImg()
 
     // throttle to FPS (note that its throttled to max one frame per 20ms later on as well)
     auto curr = std::chrono::steady_clock::now();
-    if((curr - m_last_call) < m_sec_per_frame){
+    if ((curr - m_last_call) < m_sec_per_frame)
+    {
         std::this_thread::sleep_for(m_sec_per_frame - (curr - m_last_call));
     }
     m_last_call = curr;

@@ -7,7 +7,19 @@
             "features": [
                 "contrib"
             ]
+        },
+        {
+            "name": "fltk",
+            "default-features": false,
+            "$comment": "FLUID only (potentially) needed during developement...",
+            "features": [
+                "opengl",
+                "fluid"
+            ]
         }
     ],
-    "builtin-baseline": "401578455faece3db28615775420fb0f22f9bd07"
+    "builtin-baseline": "401578455faece3db28615775420fb0f22f9bd07",
+    "vcpkg-configuration": {
+        "overlay-ports": ["./overlay_ports"]
+    }
 }

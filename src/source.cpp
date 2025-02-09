@@ -1,9 +1,23 @@
 #include "source.h"
 
-#include <QDeadlineTimer>
+// #include <QDeadlineTimer>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/videoio.hpp>
 #include <filesystem>
+
+class QDeadlineTimer
+{
+  public:
+    QDeadlineTimer()
+    {
+        throw std::runtime_error("Video not implemented here yet.");
+    }
+
+    bool hasExpired()
+    {
+        return true;
+    }
+};
 
 using namespace std::chrono_literals;
 
@@ -51,8 +65,8 @@ cv::Mat VideoStreamSource::getImg()
 {
     std::shared_lock lock(m_mut);
 
-           // could be video stream and we wait on key-frame (I-frame)
-    QDeadlineTimer timer(30s);
+    // could be video stream and we wait on key-frame (I-frame)
+    QDeadlineTimer timer;
     bool success = false;
     do
     {

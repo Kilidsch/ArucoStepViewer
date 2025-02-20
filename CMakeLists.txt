@@ -51,5 +51,6 @@ target_compile_options(viewer_core PRIVATE ${COMMON_COMPILE_OPTIONS})
 target_sources(aruco_viewer PRIVATE src/main.cpp)
 target_link_libraries(aruco_viewer PRIVATE viewer_core Qt::Qml Qt::Quick Qt::Gui Qt::QuickControls2)
 
-add_executable(fltk_viewer src/fltk_main.cpp)
+add_executable(fltk_viewer src/fltk_main.cpp src/fltk_parameters.h src/fltk_parameters.cpp src/fluid/parameters.cpp src/fluid/parameters.h)
 target_link_libraries(fltk_viewer PRIVATE viewer_core fltk fltk_images)
+target_compile_features(fltk_viewer PUBLIC cxx_std_20)

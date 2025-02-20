@@ -82,25 +82,26 @@ class ThresholdingParameters : Fl_Flex
         grid->layout(5, 2, -1, 4);
         FormBuilder b{grid};
 
-        b.add_row(add_new_parameter<int, &Params::adaptiveThreshConstant, 2, 4>("Thresh. const.:"));
-        b.add_row(add_new_parameter<int, &Params::adaptiveThreshWinSizeMax, 2, 4>("Max. win. size:"));
-        b.add_row(add_new_parameter<int, &Params::adaptiveThreshWinSizeMin, 2, 4>("Min. win. size:"));
-        b.add_row(add_new_parameter<int, &Params::adaptiveThreshWinSizeStep, 2, 4>("Size step:"));
+        b.add_row(add_new_parameter<&Params::adaptiveThreshConstant, 2, 4>("Thresh. const.:"));
+        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeMax, 2, 4>("Max. win. size:"));
+        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeMin, 2, 4>("Min. win. size:"));
+        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeStep, 2, 4>("Size step:"));
 
         this->end();
         this->fixed(title, hh);
         this->fixed(grid, 8 * hh);
         this->gap(5);
     }
-
-    template <typename InputType, auto DataMember, InputType min, InputType max>
+    // typename std::enable_if_t<std::is_same_v<decltype(min), decltype(max)>, int> = 0
+    template <auto DataMember, auto min, auto max>
+        requires std::is_same_v<decltype(min), decltype(max)>
     constexpr std::pair<Fl_Box *, Fl_Spinner *> add_new_parameter(std::string_view name, std::string_view tooltip = "")
     {
         Fl_Box *label = new Fl_Box(0, 0, 0, 0, name.data());
         label->tooltip(tooltip.data());
         Fl_Spinner *spinner = new Fl_Spinner(0, 0, 0, 0);
         spinner->tooltip(tooltip.data());
-        if constexpr (std::is_same_v<InputType, int>)
+        if constexpr (std::is_same_v<decltype(min), int>)
         {
             spinner->type(FL_INT_INPUT);
         }

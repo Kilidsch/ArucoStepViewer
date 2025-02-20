@@ -5,8 +5,6 @@
 #include <FL/Fl_Spinner.H>
 #include <FL/fl_draw.H>
 
-#include <iostream>
-
 template <auto callback_t, typename Parent, typename Widget> void add_callback(Widget *widget, Parent *self)
 {
     widget->callback(
@@ -18,22 +16,6 @@ template <auto callback_t, typename Parent, typename Widget> void add_callback(W
         },
         (void *)self);
 }
-
-/*
- * Überlegungen, was ich hier eigentlich haben will
- * Ich will angeben:
- *   - Parameter-Namen (zur Anzeige)
- *   - Parameter Namen im Struct
- *   - Minimalwert
- *   - Maximalwert
- *
- * Impl soll dann:
- *   - Neue Zeile hinzufügen mit Label und Spinner
- *   - Aktuellen Wert von Spinner auf Wert von Var setzen
- *   - Callback setzen, der Var auf Spinner-Wert setzt
- *   - Dabei min und max einhalten
- *   -
- */
 
 class FormBuilder
 {
@@ -48,7 +30,6 @@ class FormBuilder
     FormBuilder &operator=(FormBuilder &&) = default;
     FormBuilder(Fl_Grid *grid) : m_grid(grid)
     {
-        // TODO: delete other special member funcs
     }
 
     void add_row(std::pair<Fl_Box *, Fl_Spinner *> widgets)
@@ -79,20 +60,49 @@ class ThresholdingParameters : Fl_Flex
         title->measure_label(ww, hh);
 
         Fl_Grid *grid = new Fl_Grid(0, 0, 0, 0);
-        grid->layout(5, 2, -1, 4);
+        grid->layout(4, 2, -1, 4);
         FormBuilder b{grid};
 
-        b.add_row(add_new_parameter<&Params::adaptiveThreshConstant, 2, 4>("Thresh. const.:"));
-        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeMax, 2, 4>("Max. win. size:"));
-        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeMin, 2, 4>("Min. win. size:"));
-        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeStep, 2, 4>("Size step:"));
+        // TODO: special error handling to ensure minWinSize < maxWinSize
+        b.add_row(add_new_parameter<&Params::adaptiveThreshConstant, -999, 999>(
+            "Thresh. const.:", "constant for adaptive thresholding before finding contours"));
+        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeMax, 4, 999>(
+            "Max. win. size:", "maximum window size for adaptive thresholding before finding contours"));
+        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeMin, 3, 999>(
+            "Min. win. size:", "minimum window size for adaptive thresholding before finding contours"));
+        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeStep, 1, 999>(
+            "Size step:",
+            "increments from adaptiveThreshWinSizeMin to adaptiveThreshWinSizeMax during the thresholding"));
+        grid->end();
+        this->fixed(title, hh);
+        this->fixed(grid, 8 * hh);
+
+        title = new Fl_Box(0, 0, 0, 0, "Filtering");
+        title->labelfont(FL_HELVETICA_BOLD);
+        grid = new Fl_Grid(0, 0, 0, 0);
+        grid->layout(5, 2, -1, 4);
+        b = FormBuilder(grid);
+
+        // TODO: ensure minMarkerPeri < maxMarkerPeri
+        b.add_row(add_new_parameter<&Params::maxMarkerPerimeterRate, 0.0, 999.0>(
+            "Max. perimeter:", "determine maximum perimeter for marker contour to be detected"));
+        b.add_row(add_new_parameter<&Params::minMarkerPerimeterRate, 0.0, 999.0>(
+            "Min. perimeter:", "determine minimum perimeter for marker contour to be detected"));
+        b.add_row(add_new_parameter<&Params::minCornerDistanceRate, 0.0, 999.0>(
+            "Min. corner dist:", "minimum distance between corners for detected markers relative to its perimeter"));
+        b.add_row(add_new_parameter<&Params::polygonalApproxAccuracyRate, 0.0, 999.0>(
+            "Poly. approx. rate:",
+            "minimum accuracy during the polygonal approximation process to determine which contours are squares"));
+        b.add_row(add_new_parameter<&Params::minMarkerDistanceRate, 0.0, 999.0>(
+            "Min. marker dist. rate:", "minimum mean distance beetween two marker corners to be considered imilar, so "
+                                       "that the smaller one is removed"));
 
         this->end();
         this->fixed(title, hh);
-        this->fixed(grid, 8 * hh);
+        this->fixed(grid, 10 * hh);
         this->gap(5);
     }
-    // typename std::enable_if_t<std::is_same_v<decltype(min), decltype(max)>, int> = 0
+
     template <auto DataMember, auto min, auto max>
         requires std::is_same_v<decltype(min), decltype(max)>
     constexpr std::pair<Fl_Box *, Fl_Spinner *> add_new_parameter(std::string_view name, std::string_view tooltip = "")
@@ -108,7 +118,7 @@ class ThresholdingParameters : Fl_Flex
         else
         {
             spinner->type(FL_FLOAT_INPUT);
-            spinner->step(0.1);
+            spinner->step(0.01);
         }
         spinner->value(m_params.*DataMember);
         add_callback<&ThresholdingParameters::set_value<DataMember, min, max>>(spinner, this);
@@ -119,7 +129,6 @@ class ThresholdingParameters : Fl_Flex
     template <auto DataMember, auto min, auto max> void set_value(Fl_Spinner *spinner)
     {
         auto new_value = spinner->value();
-        std::cout << new_value << std::endl;
         if (new_value < min || new_value > max)
         {
             spinner->value(m_params.*DataMember);

@@ -61,6 +61,8 @@ class ThresholdingParameters : Fl_Flex
 
         Fl_Grid *grid = new Fl_Grid(0, 0, 0, 0);
         grid->layout(4, 2, -1, 4);
+        int col_weights[] = {50, 25};
+        grid->col_weight(col_weights, sizeof(col_weights) / sizeof(col_weights[0]));
         FormBuilder b{grid};
 
         // TODO: special error handling to ensure minWinSize < maxWinSize
@@ -81,6 +83,7 @@ class ThresholdingParameters : Fl_Flex
         title->labelfont(FL_HELVETICA_BOLD);
         grid = new Fl_Grid(0, 0, 0, 0);
         grid->layout(5, 2, -1, 4);
+        grid->col_weight(col_weights, sizeof(col_weights) / sizeof(col_weights[0]));
         b = FormBuilder(grid);
 
         // TODO: ensure minMarkerPeri < maxMarkerPeri

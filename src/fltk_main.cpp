@@ -6,6 +6,7 @@
 #include "fltk_parameters.h"
 #include "sceneview.h"
 #include "source.h"
+#include <FL/fl_draw.H>
 #include <iostream>
 
 int main(int argc, char **argv)
@@ -23,6 +24,9 @@ int main(int argc, char **argv)
     auto *params = new Parameters(0, 0, 10, 10);
     auto *scene_view = new SceneView(0, 0, 800, 800);
     flex->end();
+    int ww = 0, hh = 0;
+    fl_measure("Min. marker dist. rate: XXXXXXXXX", ww, hh);
+    flex->fixed(params, ww);
     window->end();
 
     window->resizable(window);

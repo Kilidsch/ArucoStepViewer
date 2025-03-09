@@ -6,7 +6,6 @@
 #include <FL/Fl_RGB_Image.H>
 #include <FL/fl_draw.H>
 #include <FL/platform.H>
-#include <iostream>
 
 SceneView::SceneView(int x, int y, int w, int h) : Fl_Tabs(x, y, w, h)
 {
@@ -107,6 +106,7 @@ void ImageStack::setTab(Tab &&tab)
         const auto &img = tab.imgs[i];
         auto *img_widget = new Fl_RGB_Image(img.data, img.cols, img.rows, img.channels(), static_cast<int>(img.step));
         pic_box->image(img_widget);
+        pic_box->redraw();
     }
 
     // delete old stuff after changing all images (not strictly needed, since we lock ui, but still)

@@ -51,8 +51,9 @@ class ThresholdingParameters : Fl_Flex
     ThresholdingParameters &operator=(const ThresholdingParameters &) = delete;
     ThresholdingParameters &operator=(ThresholdingParameters &&) = delete;
 
-    ThresholdingParameters(int x, int y, int w, int h, cv::aruco::DetectorParameters &params)
-        : Fl_Flex(x, y, w, h, Fl_Flex::VERTICAL), m_params(params)
+    ThresholdingParameters(int x, int y, int w, int h, cv::aruco::DetectorParameters &params,
+                           std::function<void(cv::aruco::DetectorParameters)> cb)
+        : Fl_Flex(x, y, w, h, Fl_Flex::VERTICAL), m_params(params), m_callback(cb)
     {
         Fl_Box *title = new Fl_Box(0, 0, 0, 0, "Thresholding");
         title->labelfont(FL_HELVETICA_BOLD);
@@ -143,14 +144,19 @@ class ThresholdingParameters : Fl_Flex
             // is int
             m_params.*DataMember = static_cast<std::remove_cvref_t<decltype(m_params.*DataMember)>>(spinner->value());
         }
+
+        // callback to re-compute with new params
+        m_callback(m_params);
     }
 
   private:
     cv::aruco::DetectorParameters &m_params;
+    std::function<void(cv::aruco::DetectorParameters)> m_callback;
 };
 
-Parameters::Parameters(int x, int y, int w, int h) : Fl_Flex(x, y, w, h, Fl_Flex::VERTICAL)
+Parameters::Parameters(int x, int y, int w, int h, std::function<void(cv::aruco::DetectorParameters)> cb)
+    : Fl_Flex(x, y, w, h, Fl_Flex::VERTICAL)
 {
-    new ThresholdingParameters(0, 0, w, h, m_params);
+    new ThresholdingParameters(0, 0, w, h, m_params, cb);
     this->end();
 }

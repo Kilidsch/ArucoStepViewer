@@ -8,7 +8,7 @@
 class Parameters : public Fl_Flex
 {
   public:
-    Parameters(int x, int y, int w, int h);
+    Parameters(int x, int y, int w, int h, std::function<void(cv::aruco::DetectorParameters)> cb);
 
   private:
     cv::aruco::DetectorParameters m_params;

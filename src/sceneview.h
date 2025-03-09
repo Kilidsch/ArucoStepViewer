@@ -11,6 +11,7 @@ class SceneView : public Fl_Tabs
 {
   public:
     SceneView(int x, int y, int w, int h);
+    void setTabs(std::vector<Tab> tabs);
 
   private:
     std::vector<Tab> m_tabs;

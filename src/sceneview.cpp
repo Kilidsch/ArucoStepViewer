@@ -29,6 +29,14 @@ SceneView::SceneView(int x, int y, int w, int h) : Fl_Tabs(x, y, w, h)
     this->end();
 }
 
+void SceneView::setTabs(std::vector<Tab> tabs)
+{
+    for (size_t i = 0; i < tabs.size(); ++i)
+    {
+        dynamic_cast<ImageStack *>(child(i))->setTab(std::move(tabs[i]));
+    }
+}
+
 ImageStack::ImageStack(Tab &&initial_tab, int x, int y, int w, int h) : Fl_Tabs(x, y, w, h)
 {
     m_tab = std::move(initial_tab);
@@ -50,9 +58,6 @@ ImageStack::ImageStack(Tab &&initial_tab, int x, int y, int w, int h) : Fl_Tabs(
         pic_box->image(img_widget);
         m_groups[i]->end();
         m_groups[i]->resizable(pic_box);
-
-        // only last iteration does not get overwritten; but this is fine
-        this->resizable(m_groups[i]);
     }
     this->end();
 }
@@ -71,21 +76,25 @@ void ImageStack::setTab(Tab &&tab)
     }
     else if (tab.imgs.size() > m_groups.size())
     {
-        m_groups.resize(tab.imgs.size());
         this->begin();
         for (size_t i = m_groups.size(); i < tab.imgs.size(); ++i)
         {
-            // TODO: extra add tab function
-            int rx, ry, rw, rh;
-            this->client_area(rx, ry, rw, rh, 10);
-            m_groups[i] = new Fl_Group(rx, ry, rw, rh, "Test");
+            auto rx = m_groups.front()->x();
+            auto ry = m_groups.front()->y();
+            auto rw = m_groups.front()->w();
+            auto rh = m_groups.front()->h();
+            auto *group = new Fl_Group(rx, ry, rw, rh, "Test");
+            m_groups.push_back(group);
             m_groups[i]->copy_label(std::to_string(i).c_str());
-            auto pic_box = new Fl_Box(0, 0, 10, 10);
+
+            auto x = m_groups.front()->child(0)->x();
+            auto y = m_groups.front()->child(0)->y();
+            auto h = m_groups.front()->child(0)->h();
+            auto w = m_groups.front()->child(0)->w();
+            auto pic_box = new Fl_Box(x, y, w, h);
+
             m_groups[i]->end();
             m_groups[i]->resizable(pic_box);
-
-            // only last iteration does not get overwritten; but this is fine
-            this->resizable(m_groups[i]);
         }
         this->end();
     }
@@ -94,12 +103,12 @@ void ImageStack::setTab(Tab &&tab)
     {
         Fl_Box *pic_box = dynamic_cast<Fl_Box *>(m_groups[i]->child(0));
         auto old_image = pic_box->image();
+        delete old_image;
         const auto &img = tab.imgs[i];
         auto *img_widget = new Fl_RGB_Image(img.data, img.cols, img.rows, img.channels(), static_cast<int>(img.step));
         pic_box->image(img_widget);
-        delete old_image;
     }
 
-    // at the end so that all images exist as long as they are referenced by a widget
+    // delete old stuff after changing all images (not strictly needed, since we lock ui, but still)
     m_tab = std::move(tab);
 }

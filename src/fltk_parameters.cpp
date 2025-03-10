@@ -66,12 +66,11 @@ class ThresholdingParameters : Fl_Flex
         grid->col_weight(col_weights, sizeof(col_weights) / sizeof(col_weights[0]));
         FormBuilder b{grid};
 
-        // TODO: special error handling to ensure minWinSize < maxWinSize
         b.add_row(add_new_parameter<&Params::adaptiveThreshConstant, -999, 999>(
             "Thresh. const.:", "constant for adaptive thresholding before finding contours"));
-        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeMax, 4, 999>(
+        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeMax, 4, 999, &Params::adaptiveThreshWinSizeMin>(
             "Max. win. size:", "maximum window size for adaptive thresholding before finding contours"));
-        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeMin, 3, 999>(
+        b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeMin, 3, 999, &Params::adaptiveThreshWinSizeMax>(
             "Min. win. size:", "minimum window size for adaptive thresholding before finding contours"));
         b.add_row(add_new_parameter<&Params::adaptiveThreshWinSizeStep, 1, 999>(
             "Size step:",
@@ -87,10 +86,9 @@ class ThresholdingParameters : Fl_Flex
         grid->col_weight(col_weights, sizeof(col_weights) / sizeof(col_weights[0]));
         b = FormBuilder(grid);
 
-        // TODO: ensure minMarkerPeri < maxMarkerPeri
-        b.add_row(add_new_parameter<&Params::maxMarkerPerimeterRate, 0.0, 999.0>(
+        b.add_row(add_new_parameter<&Params::maxMarkerPerimeterRate, 0.0, 999.0, &Params::minMarkerPerimeterRate>(
             "Max. perimeter:", "determine maximum perimeter for marker contour to be detected"));
-        b.add_row(add_new_parameter<&Params::minMarkerPerimeterRate, 0.0, 999.0>(
+        b.add_row(add_new_parameter<&Params::minMarkerPerimeterRate, 0.0, 999.0, &Params::maxMarkerPerimeterRate>(
             "Min. perimeter:", "determine minimum perimeter for marker contour to be detected"));
         b.add_row(add_new_parameter<&Params::minCornerDistanceRate, 0.0, 999.0>(
             "Min. corner dist:", "minimum distance between corners for detected markers relative to its perimeter"));
@@ -107,7 +105,7 @@ class ThresholdingParameters : Fl_Flex
         this->gap(5);
     }
 
-    template <auto DataMember, auto min, auto max>
+    template <auto DataMember, auto min, auto max, auto OtherMember = DataMember>
         requires std::is_same_v<decltype(min), decltype(max)>
     constexpr std::pair<Fl_Box *, Fl_Spinner *> add_new_parameter(std::string_view name, std::string_view tooltip = "")
     {
@@ -128,12 +126,12 @@ class ThresholdingParameters : Fl_Flex
         spinner->minimum(min - 1);
         spinner->maximum(max + 1);
         spinner->value(m_params.*DataMember);
-        add_callback<&ThresholdingParameters::set_value<DataMember, min, max>>(spinner, this);
+        add_callback<&ThresholdingParameters::set_value<DataMember, min, max, OtherMember>>(spinner, this);
 
         return {label, spinner};
     }
 
-    template <auto DataMember, auto min, auto max> void set_value(Fl_Spinner *spinner)
+    template <auto DataMember, auto min, auto max, auto OtherMember> void set_value(Fl_Spinner *spinner)
     {
         auto new_value = spinner->value();
         if (new_value < min || new_value > max)
@@ -142,9 +140,38 @@ class ThresholdingParameters : Fl_Flex
         }
         else
         {
-            // Cast is just to we do not get nagged at by clangd, because of the implicit cast to int if the DataMember
-            // is int
-            m_params.*DataMember = static_cast<std::remove_cvref_t<decltype(m_params.*DataMember)>>(spinner->value());
+            if (m_params.*DataMember > m_params.*OtherMember)
+            {
+                // max value of min/max pair, needs to stay larger
+                if (m_params.*OtherMember >= new_value)
+                {
+                    spinner->value(m_params.*DataMember);
+                }
+                else
+                {
+                    m_params.*DataMember =
+                        static_cast<std::remove_cvref_t<decltype(m_params.*DataMember)>>(spinner->value());
+                }
+            }
+            else if (m_params.*DataMember < m_params.*OtherMember)
+            {
+                // min value of min/max pair, needs to stay smaller
+                if (m_params.*OtherMember <= new_value)
+                {
+                    spinner->value(m_params.*DataMember);
+                }
+                else
+                {
+                    m_params.*DataMember =
+                        static_cast<std::remove_cvref_t<decltype(m_params.*DataMember)>>(spinner->value());
+                }
+            }
+            else
+            {
+                // not part of min max pair; can have any value within own minimum and maximum value
+                m_params.*DataMember =
+                    static_cast<std::remove_cvref_t<decltype(m_params.*DataMember)>>(spinner->value());
+            }
         }
 
         // callback to re-compute with new params

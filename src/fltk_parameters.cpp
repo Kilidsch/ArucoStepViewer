@@ -124,7 +124,9 @@ class ThresholdingParameters : Fl_Flex
             spinner->type(FL_FLOAT_INPUT);
             spinner->step(0.01);
         }
-        // TODO: set minimum and maximum! (especially for float stuff, min is standard 1 :')
+        // min and max slightly larger, such that our own custom logic handles over- and underflow
+        spinner->minimum(min - 1);
+        spinner->maximum(max + 1);
         spinner->value(m_params.*DataMember);
         add_callback<&ThresholdingParameters::set_value<DataMember, min, max>>(spinner, this);
 

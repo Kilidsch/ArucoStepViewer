@@ -11,10 +11,8 @@
         {
             "name": "fltk",
             "default-features": false,
-            "$comment": "FLUID only (potentially) needed during developement...",
             "features": [
-                "opengl",
-                "fluid"
+                "opengl"
             ]
         },
         "argparse"

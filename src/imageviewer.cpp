@@ -34,7 +34,7 @@ void ImageViewer::setImage(cv::Mat new_img)
 void ImageViewer::updateImage(int x_diff, int y_diff)
 {
     auto *new_img = m_pic_box->image();
-    new_img->scale(m_img.cols * m_zoom, m_img.rows * m_zoom, 1, 1);
+    new_img->scale(static_cast<int>(m_img.cols * m_zoom), static_cast<int>(m_img.rows * m_zoom), 1, 1);
     if (m_zoom > 1)
     {
         new_img->scaling_algorithm(FL_RGB_SCALING_NEAREST);
@@ -44,13 +44,16 @@ void ImageViewer::updateImage(int x_diff, int y_diff)
         new_img->scaling_algorithm(FL_RGB_SCALING_BILINEAR);
     }
 
-    m_pic_box->resize(m_pic_box->x(), m_pic_box->y(), m_img.cols * m_zoom, m_img.rows * m_zoom);
+    m_pic_box->resize(m_pic_box->x(), m_pic_box->y(), static_cast<int>(m_img.cols * m_zoom),
+                      static_cast<int>(m_img.rows * m_zoom));
 
     // keep pixel under mouse (if zoomed in with scrollbar)
     auto new_x_pos = m_scroll->xposition() + x_diff;
-    new_x_pos = std::clamp<int>(new_x_pos, m_scroll->hscrollbar.minimum(), m_scroll->hscrollbar.maximum());
+    new_x_pos = std::clamp<int>(new_x_pos, static_cast<int>(m_scroll->hscrollbar.minimum()),
+                                static_cast<int>(m_scroll->hscrollbar.maximum()));
     auto new_y_pos = m_scroll->yposition() + y_diff;
-    new_y_pos = std::clamp<int>(new_y_pos, m_scroll->scrollbar.minimum(), m_scroll->scrollbar.maximum());
+    new_y_pos = std::clamp<int>(new_y_pos, static_cast<int>(m_scroll->scrollbar.minimum()),
+                                static_cast<int>(m_scroll->scrollbar.maximum()));
     m_scroll->scroll_to(new_x_pos, new_y_pos);
 
     redraw();

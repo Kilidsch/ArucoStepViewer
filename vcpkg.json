@@ -2,10 +2,13 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "dependencies": [
     {
-      "name": "opencv",
+      "name": "opencv4",
       "default-features": false,
       "features": [
-        "contrib"
+            "calib3d",
+            "png",
+            "jpeg",
+            "ffmpeg"
       ]
     },
     {

@@ -3,7 +3,7 @@
 
 #include <FL/Fl_Flex.H>
 #include <FL/Fl_Grid.H>
-#include <opencv2/aruco.hpp>
+#include <opencv2/objdetect/aruco_detector.hpp>
 
 class Parameters : public Fl_Flex
 {

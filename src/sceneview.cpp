@@ -33,7 +33,7 @@ void SceneView::setTabs(std::vector<Tab> tabs)
 {
     for (size_t i = 0; i < tabs.size(); ++i)
     {
-        dynamic_cast<ImageStack *>(child(i))->setTab(std::move(tabs[i]));
+        dynamic_cast<ImageStack *>(child(static_cast<int>(i)))->setTab(std::move(tabs[i]));
     }
 }
 

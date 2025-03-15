@@ -11,8 +11,7 @@ recreated is 4.5.5 (note that the aruco detection was reworked since then).
 > [!NOTE]  
 > Does (currently) not work with AprilTag
 
-
-![Showcase of UI, going through different tabs](docs/gui-showcase.webm)
+[Showcase of GUI, going through available tabs showing the visualization of the steps of the algorithm](https://github.com/user-attachments/assets/27830c85-ce9a-4e86-a7a4-8c1cb8f21822)
 
 Currently, the application needs to be started from the commandline. Use the `--help` option to find out how exactly to call it.
 For building the application, [vcpkg](https://github.com/microsoft/vcpkg) can be used to install the dependencies from the `vcpkg.json` manifest.

@@ -22,7 +22,6 @@ class ImageViewer : public Fl_Group
     Fl_Box *m_pic_box;
     Fl_Scroll *m_scroll;
     cv::Mat m_img;
-    cv::Mat m_show_img;
 
     double m_zoom{1.0};
     cv::Point2f m_pos{0, 0};

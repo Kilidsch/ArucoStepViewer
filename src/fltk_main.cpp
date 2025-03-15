@@ -92,7 +92,8 @@ struct Args
 
 Args parse_args(int argc, char **argv)
 {
-    argparse::ArgumentParser program("Aruco Step Viewer");
+    argparse::ArgumentParser program("Aruco Step Viewer", "1.0");
+    program.add_description("Program to tune parameters for aruco marker detection.");
 
     // when updating dependencies, could use this
     // auto &group = program.add_mutually_exclusive_group(true);

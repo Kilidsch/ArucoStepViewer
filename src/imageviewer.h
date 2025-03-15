@@ -26,6 +26,9 @@ class ImageViewer : public Fl_Group
 
     double m_zoom{1.0};
     cv::Point2f m_pos{0, 0};
+    bool m_drag_enabled = false;
+    int m_drag_x;
+    int m_drag_y;
 };
 
 #endif // IMAGEVIEWER_H

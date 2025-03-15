@@ -86,12 +86,6 @@ void ImageStack::setTab(Tab &&tab)
     for (size_t i = 0; i < m_groups.size(); i++)
     {
         m_groups[i]->setImage(tab.imgs[i]);
-        // Fl_Box *pic_box = dynamic_cast<Fl_Box *>(m_groups[i]->child(0));
-        // auto old_image = pic_box->image();
-        // delete old_image;
-        // const auto &img = tab.imgs[i];
-        // auto *img_widget = new Fl_RGB_Image(img.data, img.cols, img.rows, img.channels(),
-        // static_cast<int>(img.step)); pic_box->image(img_widget); pic_box->redraw();
     }
     // delete old stuff after changing all images (not strictly needed, since we lock ui, but still)
     m_tab = std::move(tab);

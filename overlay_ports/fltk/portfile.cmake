@@ -7,6 +7,7 @@ vcpkg_from_github(
     SHA512 aaaffc49d8b9f05b1e57e8b34c359b437fc0a8f8b63cc33bafb2b3769c493b0f47a273d21cda494d18160f591eb13446119d77fd7c32f35ba2d93619388e408d
     PATCHES
         math-h-polyfill.patch
+        dependencies.patch
     HEAD_REF master
 )
 

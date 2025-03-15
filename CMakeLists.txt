@@ -14,9 +14,10 @@ list(APPEND COMMON_COMPILE_OPTIONS
     $<$<CXX_COMPILER_ID:MSVC>:/MT>
 )
 
-
 find_package(OpenCV REQUIRED)
 find_package(FLTK CONFIG REQUIRED)
+find_package(argparse CONFIG REQUIRED)
+
 message(STATUS "Using OpenCV version ${OpenCV_VERSION}")
 message(STATUS "${OpenCV_LIBS}")
 
@@ -36,6 +37,6 @@ add_executable(fltk_viewer
     src/ratetimer.h
     src/imageviewer.h
     src/imageviewer.cpp)
-target_link_libraries(fltk_viewer PRIVATE viewer_core fltk fltk_images)
+target_link_libraries(fltk_viewer PRIVATE viewer_core fltk::fltk fltk::images argparse::argparse)
 target_compile_options(fltk_viewer PRIVATE ${COMMON_COMPILE_OPTIONS})
 target_compile_features(fltk_viewer PUBLIC cxx_std_23)

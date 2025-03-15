@@ -3,14 +3,13 @@
 #include <FL/Fl_Window.H>
 
 #include "aruco.h"
-#include "fltk_parameters.h"
-#include "ratetimer.h"
 #include "sceneview.h"
 #include "source.h"
 #include <FL/Fl_Double_Window.H>
 #include <FL/fl_draw.H>
 #include <argparse/argparse.hpp>
 #include <iostream>
+#include <thread>
 
 using namespace std::chrono_literals;
 
@@ -23,7 +22,7 @@ std::jthread create_compute_thread(std::unique_ptr<Source> &source, InputType ty
     {
     case InputType::Image:
         // When using an image, rerun on every change of parameters
-        computeThread = std::jthread([&](std::stop_token stoken) {
+        computeThread = std::jthread([&, view = view](std::stop_token stoken) {
             auto img = source->getImg();
             std::vector<int> markerIds;
             std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
@@ -49,7 +48,7 @@ std::jthread create_compute_thread(std::unique_ptr<Source> &source, InputType ty
         [[fallthrough]];
     case InputType::Video:
         // When video(stream), rerun on every new frame
-        computeThread = std::jthread([&](std::stop_token stoken) {
+        computeThread = std::jthread([&, view = view](std::stop_token stoken) {
             std::vector<int> markerIds;
             std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
             cv::Ptr<cv::aruco::Dictionary> dictionary =

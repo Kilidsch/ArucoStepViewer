@@ -15,6 +15,7 @@ class SceneView : public Fl_Tabs
 
   private:
     std::vector<Tab> m_tabs;
+    std::vector<Fl_Tabs *> m_tab_widgets;
 };
 
 class ImageStack : public Fl_Tabs

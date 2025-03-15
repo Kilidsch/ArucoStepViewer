@@ -1,0 +1,43 @@
+diff --git a/CMake/resources.cmake b/CMake/resources.cmake
+index bad4279be..98b055e0b 100644
+--- a/CMake/resources.cmake
++++ b/CMake/resources.cmake
+@@ -90,7 +90,8 @@ unset(git_revision)
+ # Include FindPkgConfig for later use of pkg-config
+ #######################################################################
+ 
+-include(FindPkgConfig)
++#include(FindPkgConfig)
++find_package(PkgConfig)
+ 
+ # fl_debug_var(PKG_CONFIG_FOUND)
+ # fl_debug_var(PKG_CONFIG_EXECUTABLE)
+@@ -205,8 +206,9 @@ endif(NOT HAVE_DIRENT_H)
+ 
+ # where to find freetype headers
+ 
+-find_path(FREETYPE_PATH freetype.h PATH_SUFFIXES freetype2)
+-find_path(FREETYPE_PATH freetype/freetype.h PATH_SUFFIXES freetype2)
++# find_path(FREETYPE_PATH freetype.h PATH_SUFFIXES freetype2)
++# find_path(FREETYPE_PATH freetype/freetype.h PATH_SUFFIXES freetype2)
++set(FREETYPE_PATH "" CACHE INTERNAL "Obsolete")
+ 
+ if(FREETYPE_PATH AND ((NOT APPLE) OR FLTK_BACKEND_X11))
+   list(APPEND FLTK_BUILD_INCLUDE_DIRECTORIES ${FREETYPE_PATH})
+@@ -216,11 +218,13 @@ mark_as_advanced(FREETYPE_PATH)
+ 
+ #######################################################################
+ # libraries
+-find_library(LIB_dl dl)
++#find_library(LIB_dl dl)
++set(LIB_dl "${CMAKE_DL_LIBS}" CACHE STRING "")
+ if((NOT APPLE) OR FLTK_BACKEND_X11)
+-  find_library(LIB_fontconfig fontconfig)
++  find_package(Fontconfig REQUIRED)
++  set(LIB_fontconfig "${Fontconfig_LIBRARIES}" CACHE INTERNAL "")
+ endif((NOT APPLE) OR FLTK_BACKEND_X11)
+-find_library(LIB_freetype freetype)
++set(LIB_freetype "" CACHE INTERNAL "Obsolete")
+ find_library(LIB_GL GL)
+ find_library(LIB_MesaGL MesaGL)
+ find_library(LIB_jpeg jpeg)

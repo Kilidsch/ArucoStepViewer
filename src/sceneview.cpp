@@ -18,13 +18,15 @@ SceneView::SceneView(int x, int y, int w, int h) : Fl_Tabs(x, y, w, h)
     fl_open_display();
     int ww = 0, hh = 0; // initialize to zero before calling fl_measure()
     fl_measure("test text", ww, hh);
-
-    for (auto &tab : m_tabs)
+    m_tab_widgets.resize(m_tabs.size());
+    for (size_t i = 0; i < m_tabs.size(); ++i)
     {
+        auto &tab = m_tabs[i];
         int rx, ry, rw, rh;
         this->client_area(rx, ry, rw, rh, hh);
         auto stack = new ImageStack(std::move(tab), rx, ry, rw, rh);
         this->resizable(stack);
+        m_tab_widgets[i] = stack;
     }
     this->end();
 }
@@ -33,7 +35,7 @@ void SceneView::setTabs(std::vector<Tab> tabs)
 {
     for (size_t i = 0; i < tabs.size(); ++i)
     {
-        dynamic_cast<ImageStack *>(child(static_cast<int>(i)))->setTab(std::move(tabs[i]));
+        dynamic_cast<ImageStack *>(m_tab_widgets.at(i))->setTab(std::move(tabs[i]));
     }
 }
 

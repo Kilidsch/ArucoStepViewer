@@ -1,7 +1,6 @@
 #ifndef SOURCE_H
 #define SOURCE_H
 
-#include <mutex>
 #include <opencv2/opencv.hpp>
 #include <shared_mutex>
 #include <thread>
@@ -21,7 +20,8 @@ class Source
     virtual cv::Mat getImg() = 0;
     virtual void requestStop(){
         // only needed in implementations with worker threads
-    };
+    }
+    virtual ~Source() = default;
 };
 
 std::unique_ptr<Source> createSource(InputType type, std::string path);
@@ -34,6 +34,7 @@ class ImageSource: public Source{
   public:
     ImageSource(const std::string& path);
     cv::Mat getImg() override;
+    ~ImageSource() override = default;
 };
 
 
@@ -48,6 +49,7 @@ class VideoStreamSource : public Source{
 
   public:
     VideoStreamSource(const std::string &path);
+    ~VideoStreamSource() override = default;
     void requestStop() override;
     cv::Mat getImg() override;
 };
@@ -61,6 +63,7 @@ class VideoSource : public Source{
 
   public:
     VideoSource(const std::string& path);
+    ~VideoSource() override = default;
     cv::Mat getImg() override;
 };
 

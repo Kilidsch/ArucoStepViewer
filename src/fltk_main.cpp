@@ -26,13 +26,14 @@ std::jthread create_compute_thread(std::unique_ptr<Source> &source, InputType ty
             auto img = source->getImg();
             std::vector<int> markerIds;
             std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
-            cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100);
-            cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
+            auto dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100);
+            cv::Ptr<cv::aruco::Dictionary> dictionary = cv::makePtr<cv::aruco::Dictionary>(dict);
+            // cv::aruco::DetectorParameters parameters{};
             while (!stoken.stop_requested())
             {
                 // re-run with new parameters; images are reset in simulateDetectMarkers
                 auto params = curr_params.load();
-                auto parameters = std::make_shared<cv::aruco::DetectorParameters>(params);
+                auto parameters = cv::makePtr<cv::aruco::DetectorParameters>(params);
                 simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
                 // model updates the UI
                 Fl::lock();
@@ -50,15 +51,16 @@ std::jthread create_compute_thread(std::unique_ptr<Source> &source, InputType ty
         computeThread = std::jthread([&](std::stop_token stoken) {
             std::vector<int> markerIds;
             std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
-            cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100);
-            cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
+            cv::Ptr<cv::aruco::Dictionary> dictionary =
+                cv::makePtr<cv::aruco::Dictionary>(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100));
+            // cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
             constexpr auto min_time = 20ms;
             RateTimer timer(min_time);
             while (!stoken.stop_requested())
             {
                 auto img = source->getImg();
                 auto params = curr_params.load();
-                auto parameters = std::make_shared<cv::aruco::DetectorParameters>(params);
+                auto parameters = cv::makePtr<cv::aruco::DetectorParameters>(params);
                 simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
                 // model updates the UI
                 Fl::lock();
@@ -138,8 +140,9 @@ int main(int argc, char **argv)
     std::unique_ptr<Source> source = createSource(args.type, args.path);
     std::vector<int> markerIds;
     std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
-    cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100);
-    cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
+    cv::Ptr<cv::aruco::Dictionary> dictionary(
+        std::make_shared<cv::aruco::Dictionary>(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100)));
+    cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::makePtr<cv::aruco::DetectorParameters>();
     auto img = source->getImg();
     simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
 

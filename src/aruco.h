@@ -1,5 +1,5 @@
-#include <opencv2/aruco.hpp>
 #include <opencv2/core.hpp>
+#include <opencv2/objdetect.hpp>
 #include <vector>
 
 void simulateDetectMarkers(cv::InputArray _image, const cv::Ptr<cv::aruco::Dictionary> &_dictionary,

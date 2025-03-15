@@ -118,38 +118,9 @@ int ImageViewer::handle(int event)
                 const int x_max = m_pic_box->w() - m_scroll->w() + m_scroll->scrollbar.w();
                 const int y_max = m_pic_box->h() - m_scroll->h() + m_scroll->hscrollbar.h();
 
-                bool x_move = false;
-                if (x <= 0)
-                {
-                    x = 0;
-                }
-                else if (x >= x_max)
-                {
-                    x = x_max;
-                }
-                else
-                {
-                    x_move = true;
-                }
-
-                bool y_move = false;
-                if (y <= 0)
-                {
-                    y = 0;
-                }
-                else if (y >= y_max)
-                {
-                    y = y_max;
-                }
-                else
-                {
-                    y_move = true;
-                }
-
-                if (x_move || y_move)
-                {
-                    m_scroll->scroll_to(x, y);
-                }
+                x = std::clamp(x, 0, x_max);
+                y = std::clamp(y, 0, y_max);
+                m_scroll->scroll_to(x, y);
             }
             return 1;
         }

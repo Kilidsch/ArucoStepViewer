@@ -1,13 +1,26 @@
 {
-    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-    "dependencies": [
-        {
-            "name": "opencv",
-            "default-features": false,
-            "features": [
-                "contrib"
-            ]
-        }
-    ],
-    "builtin-baseline": "401578455faece3db28615775420fb0f22f9bd07"
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "dependencies": [
+    {
+      "name": "opencv",
+      "default-features": false,
+      "features": [
+        "contrib"
+      ]
+    },
+    {
+      "name": "fltk",
+      "default-features": false,
+      "features": [
+        "opengl"
+      ]
+    },
+    "argparse"
+  ],
+  "builtin-baseline": "782ccc18d8b819cdef6794a6c03eb3d9f7cd04aa",
+  "vcpkg-configuration": {
+    "overlay-ports": [
+      "./overlay_ports"
+    ]
+  }
 }

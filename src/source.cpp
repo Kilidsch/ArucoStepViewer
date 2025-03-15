@@ -1,9 +1,9 @@
 #include "source.h"
 
-#include <QDeadlineTimer>
+// #include <QDeadlineTimer>
+#include <filesystem>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/videoio.hpp>
-#include <filesystem>
 
 using namespace std::chrono_literals;
 
@@ -51,8 +51,10 @@ cv::Mat VideoStreamSource::getImg()
 {
     std::shared_lock lock(m_mut);
 
-           // could be video stream and we wait on key-frame (I-frame)
-    QDeadlineTimer timer(30s);
+    // could be video stream and we wait on key-frame (I-frame)
+    using clock = std::chrono::steady_clock;
+    auto start = clock::now();
+    constexpr auto timeout = 30s;
     bool success = false;
     do
     {
@@ -61,13 +63,14 @@ cv::Mat VideoStreamSource::getImg()
         {
             m_capture.grab();
         }
-    } while (!timer.hasExpired() && !success);
+    } while (!(clock::now() - start > timeout) && !success);
 
     if (!success)
     {
         throw std::runtime_error("Could not read new frame from video(stream)");
     }
 
+    cv::cvtColor(m_img, m_img, cv::COLOR_BGR2RGB);
     return m_img.clone();
 }
 
@@ -75,6 +78,7 @@ cv::Mat VideoStreamSource::getImg()
 ImageSource::ImageSource(const std::string &path)
 {
     m_img = cv::imread(path);
+    cv::cvtColor(m_img, m_img, cv::COLOR_BGR2RGB);
     if (m_img.empty())
     {
         std::stringstream ss;
@@ -125,7 +129,7 @@ VideoSource::VideoSource(const std::string &path)
 cv::Mat VideoSource::getImg()
 {
     m_capture.read(m_img);
-
+    cv::cvtColor(m_img, m_img, cv::COLOR_BGR2RGB);
     // throttle to FPS (note that its throttled to max one frame per 20ms later on as well)
     auto curr = std::chrono::steady_clock::now();
     if ((curr - m_last_call) < m_sec_per_frame)
@@ -133,5 +137,6 @@ cv::Mat VideoSource::getImg()
         std::this_thread::sleep_for(m_sec_per_frame - (curr - m_last_call));
     }
     m_last_call = curr;
+
     return m_img.clone();
 }

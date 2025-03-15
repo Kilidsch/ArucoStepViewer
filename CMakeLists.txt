@@ -26,8 +26,13 @@ target_compile_features(viewer_core PUBLIC cxx_std_23)
 target_link_libraries(viewer_core PUBLIC ${OpenCV_LIBS} $<$<CXX_COMPILER_ID:GNU>:atomic>)
 target_compile_options(viewer_core PRIVATE ${COMMON_COMPILE_OPTIONS})
 
-add_executable(fltk_viewer src/fltk_main.cpp src/fltk_parameters.h src/fltk_parameters.cpp
-    src/sceneview.h src/sceneview.cpp
-    src/ratetimer.h)
+add_executable(fltk_viewer
+    src/fltk_main.cpp
+    src/fltk_parameters.h
+    src/fltk_parameters.cpp
+    src/sceneview.h
+    src/sceneview.cpp
+    src/ratetimer.h
+    src/imageviewer.h src/imageviewer.cpp)
 target_link_libraries(fltk_viewer PRIVATE viewer_core fltk fltk_images)
 target_compile_features(fltk_viewer PUBLIC cxx_std_23)

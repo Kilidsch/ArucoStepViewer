@@ -7,6 +7,7 @@
 #include "ratetimer.h"
 #include "sceneview.h"
 #include "source.h"
+#include <FL/Fl_Double_Window.H>
 #include <FL/fl_draw.H>
 #include <argparse/argparse.hpp>
 #include <iostream>
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
         curr_params.notify_all();
     };
 
-    Fl_Window *window = new Fl_Window(800, 800);
+    Fl_Double_Window *window = new Fl_Double_Window(800, 800);
     Fl_Flex *flex = new Fl_Flex(window->w(), window->h(), Fl_Flex::HORIZONTAL);
     auto *params = new Parameters(0, 0, 10, 10, callback);
     auto *scene_view = new SceneView(0, 0, 800, 800);

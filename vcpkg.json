@@ -13,10 +13,7 @@
     },
     {
       "name": "fltk",
-      "default-features": false,
-      "features": [
-        "opengl"
-      ]
+      "default-features": false
     },
     "argparse"
   ],

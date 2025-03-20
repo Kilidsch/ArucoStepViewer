@@ -1,0 +1,97 @@
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: true
+
+      # Set up a matrix to run the following 3 configurations:
+      # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
+      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
+      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+        c_compiler: [gcc, clang, cl]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
+          - os: ubuntu-latest
+            c_compiler: cl
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Install system dependencies
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt install libx11-dev nasm
+
+    - name: Set windows triplet to static
+      if: matrix.os == 'windows-latest'
+      run: |
+        Add-Content -Path ${env:GITHUB_ENV} -Value "triplet=x64-windows-static"
+
+    - name: Set linux triplet to static
+      if: matrix.os == 'ubuntu-latest'
+      shell: bash
+      run: |
+        echo "triplet=x64-linux" >> "$GITHUB_ENV"
+
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      id: runvcpkg
+      with:
+        # This specifies the location of vcpkg, where it is going to be restored from cache, or create from scratch.
+        vcpkgDirectory: '${{ github.workspace }}/b/vcpkg'
+        vcpkgJsonGlob: 'vcpkg.json'
+
+    - name: Prints output of run-vcpkg's action
+      run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_DEFAULT_TRIPLET_OUT }}'"
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_TOOLCHAIN_FILE=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/scripts/buildsystems/vcpkg.cmake
+        -DVCPKG_TARGET_TRIPLET=${{ env.triplet }}
+        -S ${{ github.workspace }}
+
+    - name: Build
+      # Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+#    - name: Test
+#      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+#      # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+#      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+#      run: ctest --build-config ${{ matrix.build_type }}

@@ -1,8 +1,11 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
+#include <FL/Fl_Flex.H>
 #include <FL/Fl_Window.H>
 
 #include "aruco.h"
+#include "fltk_parameters.h"
+#include "ratetimer.h"
 #include "sceneview.h"
 #include "source.h"
 #include <FL/Fl_Double_Window.H>

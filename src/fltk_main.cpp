@@ -16,8 +16,14 @@
 
 using namespace std::chrono_literals;
 
+struct DetectionParams
+{
+    cv::aruco::DetectorParameters params;
+    cv::aruco::PredefinedDictionaryType dict;
+};
+
 std::jthread create_compute_thread(std::unique_ptr<Source> &source, InputType type, SceneView *view,
-                                   std::atomic<cv::aruco::DetectorParameters> &curr_params)
+                                   std::atomic<DetectionParams> &curr_params)
 {
     std::jthread computeThread;
 
@@ -29,14 +35,14 @@ std::jthread create_compute_thread(std::unique_ptr<Source> &source, InputType ty
             auto img = source->getImg();
             std::vector<int> markerIds;
             std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
-            auto dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100);
-            cv::Ptr<cv::aruco::Dictionary> dictionary = cv::makePtr<cv::aruco::Dictionary>(dict);
             // cv::aruco::DetectorParameters parameters{};
             while (!stoken.stop_requested())
             {
                 // re-run with new parameters; images are reset in simulateDetectMarkers
                 auto params = curr_params.load();
-                auto parameters = cv::makePtr<cv::aruco::DetectorParameters>(params);
+                auto dict = cv::aruco::getPredefinedDictionary(params.dict);
+                cv::Ptr<cv::aruco::Dictionary> dictionary = cv::makePtr<cv::aruco::Dictionary>(dict);
+                auto parameters = cv::makePtr<cv::aruco::DetectorParameters>(params.params);
                 simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
                 // model updates the UI
                 Fl::lock();
@@ -54,16 +60,15 @@ std::jthread create_compute_thread(std::unique_ptr<Source> &source, InputType ty
         computeThread = std::jthread([&, view = view](std::stop_token stoken) {
             std::vector<int> markerIds;
             std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
-            cv::Ptr<cv::aruco::Dictionary> dictionary =
-                cv::makePtr<cv::aruco::Dictionary>(cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_100));
-            // cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
             constexpr auto min_time = 20ms;
             RateTimer timer(min_time);
             while (!stoken.stop_requested())
             {
                 auto img = source->getImg();
                 auto params = curr_params.load();
-                auto parameters = cv::makePtr<cv::aruco::DetectorParameters>(params);
+                cv::Ptr<cv::aruco::Dictionary> dictionary =
+                    cv::makePtr<cv::aruco::Dictionary>(cv::aruco::getPredefinedDictionary(params.dict));
+                auto parameters = cv::makePtr<cv::aruco::DetectorParameters>(params.params);
                 simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
                 // model updates the UI
                 Fl::lock();
@@ -150,9 +155,9 @@ int main(int argc, char **argv)
     auto img = source->getImg();
     simulateDetectMarkers(img, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
 
-    std::atomic<cv::aruco::DetectorParameters> curr_params;
-    auto callback = [&](cv::aruco::DetectorParameters params) {
-        curr_params.store(params);
+    std::atomic<DetectionParams> curr_params;
+    auto callback = [&](cv::aruco::DetectorParameters params, cv::aruco::PredefinedDictionaryType dict) {
+        curr_params.store({params, dict});
         curr_params.notify_all();
     };
 
@@ -179,7 +184,7 @@ int main(int argc, char **argv)
     cv::aruco::DetectorParameters impossible_params;
     impossible_params.adaptiveThreshWinSizeMax = 1;
     impossible_params.adaptiveThreshWinSizeMin = 3;
-    curr_params = impossible_params;
+    curr_params = {impossible_params, cv::aruco::DICT_4X4_100};
     curr_params.notify_all();
 
     return 0;

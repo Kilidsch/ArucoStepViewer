@@ -2,7 +2,6 @@
 #define IMAGEVIEWER_H
 
 #include <FL/Fl_Group.H>
-#include <FL/Fl_Image.H> // forward-declare?
 #include <FL/Fl_Scroll.H>
 #include <opencv2/core.hpp>
 class Fl_Box;

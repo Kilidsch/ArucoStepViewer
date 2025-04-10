@@ -10,12 +10,10 @@ template <auto callback_t, typename Parent, typename Widget> void add_callback(W
 {
     widget->callback(
         [](Fl_Widget *widget, void *t) {
-            // dynamic casts not possible with void pointer
-            // but this is guaranteed to be possible (see input types)
-            // so the C-style may hopefully be forgiven
-            (((Parent *)t)->*callback_t)((Widget *)widget);
+            // cast is guaranteed to be possible (see input types)
+            ((static_cast<Parent *>(t))->*callback_t)(static_cast<Widget *>(widget));
         },
-        (void *)self);
+        static_cast<void *>(self));
 }
 
 static std::array<const char *, 22> dict_names{
@@ -51,41 +49,45 @@ class FormBuilder
     }
 };
 
-class ThresholdingParameters : Fl_Flex
+class ParametersImpl : public Fl_Flex
 {
     using Params = cv::aruco::DetectorParameters;
 
   public:
-    ThresholdingParameters(const ThresholdingParameters &) = delete;
-    ThresholdingParameters(ThresholdingParameters &&) = delete;
-    ThresholdingParameters &operator=(const ThresholdingParameters &) = delete;
-    ThresholdingParameters &operator=(ThresholdingParameters &&) = delete;
+    ParametersImpl(const ParametersImpl &) = delete;
+    ParametersImpl(ParametersImpl &&) = delete;
+    ParametersImpl &operator=(const ParametersImpl &) = delete;
+    ParametersImpl &operator=(ParametersImpl &&) = delete;
 
-    ThresholdingParameters(int x, int y, int w, int h, cv::aruco::DetectorParameters &params,
-                           std::function<void(cv::aruco::DetectorParameters, cv::aruco::PredefinedDictionaryType)> cb)
-        : Fl_Flex(x, y, w, h, Fl_Flex::VERTICAL), m_params(params), m_callback(cb)
+    ParametersImpl(int x, int y, int w, int h,
+                   std::function<void(cv::aruco::DetectorParameters, cv::aruco::PredefinedDictionaryType)> cb)
+        : Fl_Flex(x, y, w, h, Fl_Flex::VERTICAL), m_callback(cb)
     {
+        // --------------------- Dictionary Selection ------------------------------------------------
+
         Fl_Box *title = new Fl_Box(0, 0, 0, 0, "Dictionary");
         title->labelfont(FL_HELVETICA_BOLD);
         int ww = 0, hh = 0; // initialize to zero before calling fl_measure()
         title->measure_label(ww, hh);
 
         Fl_Choice *choice = new Fl_Choice(0, 0, 0, 0, "");
-        for (size_t i = 0; i < dict_names.size(); ++i)
+        for (auto name : dict_names)
         {
-            choice->add(dict_names[i]);
+            choice->add(name);
         }
         choice->value(1);
         choice->callback(
             [](Fl_Widget *choice, void *data) {
                 int selected = dynamic_cast<Fl_Choice *>(choice)->value();
-                auto *self = static_cast<ThresholdingParameters *>(data);
+                auto *self = static_cast<ParametersImpl *>(data);
                 self->m_dict = cv::aruco::PredefinedDictionaryType(selected);
                 self->m_callback(self->m_params, self->m_dict);
             },
             static_cast<void *>(this));
         this->fixed(title, hh);
         this->fixed(choice, 2 * hh);
+
+        // --------------------- Thresholding  -------------------------------------------------------
 
         title = new Fl_Box(0, 0, 0, 0, "Thresholding");
         title->labelfont(FL_HELVETICA_BOLD);
@@ -109,6 +111,8 @@ class ThresholdingParameters : Fl_Flex
         this->fixed(title, hh);
         this->fixed(grid, 8 * hh);
 
+        // --------------------- Filtering  ----------------------------------------------------------
+
         title = new Fl_Box(0, 0, 0, 0, "Filtering");
         title->labelfont(FL_HELVETICA_BOLD);
         grid = new Fl_Grid(0, 0, 0, 0);
@@ -128,7 +132,7 @@ class ThresholdingParameters : Fl_Flex
         b.add_row(add_new_parameter<&Params::minMarkerDistanceRate, 0.0, 999.0>(
             "Min. marker dist. rate:", "minimum mean distance beetween two marker corners to be considered imilar, so "
                                        "that the smaller one is removed"));
-
+        grid->end();
         this->end();
         this->fixed(title, hh);
         this->fixed(grid, 10 * hh);
@@ -156,7 +160,7 @@ class ThresholdingParameters : Fl_Flex
         spinner->minimum(min - 1);
         spinner->maximum(max + 1);
         spinner->value(m_params.*DataMember);
-        add_callback<&ThresholdingParameters::set_value<DataMember, min, max, OtherMember>>(spinner, this);
+        add_callback<&ParametersImpl::set_value<DataMember, min, max, OtherMember>>(spinner, this);
 
         return {label, spinner};
     }
@@ -209,7 +213,7 @@ class ThresholdingParameters : Fl_Flex
     }
 
   private:
-    cv::aruco::DetectorParameters &m_params;
+    cv::aruco::DetectorParameters m_params;
     cv::aruco::PredefinedDictionaryType m_dict;
     std::function<void(cv::aruco::DetectorParameters, cv::aruco::PredefinedDictionaryType)> m_callback;
 };
@@ -218,6 +222,6 @@ Parameters::Parameters(int x, int y, int w, int h,
                        std::function<void(cv::aruco::DetectorParameters, cv::aruco::PredefinedDictionaryType)> cb)
     : Fl_Flex(x, y, w, h, Fl_Flex::VERTICAL)
 {
-    new ThresholdingParameters(0, 0, w, h, m_params, cb);
+    new ParametersImpl(0, 0, w, h, cb);
     this->end();
 }

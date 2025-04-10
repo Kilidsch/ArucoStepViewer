@@ -20,13 +20,13 @@ class SceneView : public Fl_Tabs
 
 class ImageStack : public Fl_Tabs
 {
-    Tab m_tab;
-    std::vector<ImageViewer *> m_groups;
-
   public:
     ImageStack(Tab &&initial_tab, int x, int y, int w, int h);
-
     void setTab(Tab &&tab);
+
+  private:
+    Tab m_tab;
+    std::vector<ImageViewer *> m_groups;
 };
 
 #endif // SCENEVIEW_H

@@ -1,6 +1,7 @@
 #include "imageviewer.h"
 #include <FL/Fl_Box.H>
 
+#include <FL/Fl_Image.H>
 #include <FL/fl_draw.H>
 #include <opencv2/imgproc.hpp>
 

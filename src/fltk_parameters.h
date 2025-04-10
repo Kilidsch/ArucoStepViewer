@@ -10,9 +10,6 @@ class Parameters : public Fl_Flex
   public:
     Parameters(int x, int y, int w, int h,
                std::function<void(cv::aruco::DetectorParameters, cv::aruco::PredefinedDictionaryType)> cb);
-
-  private:
-    cv::aruco::DetectorParameters m_params;
 };
 
 #endif // FLTK_PARAMETERS_H

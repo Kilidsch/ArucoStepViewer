@@ -173,7 +173,6 @@ int main(int argc, char **argv)
 
     std::jthread computeThread = create_compute_thread(source, args.type, scene_view, curr_params);
     window->resizable(window);
-    //  window->size_range(params->w(), params->h());
 
     window->show(0, argv);
     Fl::run();

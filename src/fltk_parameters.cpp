@@ -1,6 +1,7 @@
 #include "fltk_parameters.h"
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
+#include <FL/Fl_Choice.H>
 #include <FL/Fl_Flex.H>
 #include <FL/Fl_Spinner.H>
 #include <FL/fl_draw.H>
@@ -16,6 +17,15 @@ template <auto callback_t, typename Parent, typename Widget> void add_callback(W
         },
         (void *)self);
 }
+
+static std::array<const char *, 22> dict_names{
+    "DICT_4X4_50",         "DICT_4X4_100",        "DICT_4X4_250",       "DICT_4X4_1000",      "DICT_5X5_50",
+    "DICT_5X5_100",        "DICT_5X5_250",        "DICT_5X5_1000",      "DICT_6X6_50",        "DICT_6X6_100",
+    "DICT_6X6_250",        "DICT_6X6_1000",       "DICT_7X7_50",        "DICT_7X7_100",       "DICT_7X7_250",
+    "DICT_7X7_1000",       "DICT_ARUCO_ORIGINAL", "DICT_APRILTAG_16h5", "DICT_APRILTAG_25h9", "DICT_APRILTAG_36h10",
+    "DICT_APRILTAG_36h11", "DICT_ARUCO_MIP_36h12"};
+// need unchanged enum; check only last value here...
+static_assert(cv::aruco::PredefinedDictionaryType::DICT_ARUCO_MIP_36h12 == 21);
 
 class FormBuilder
 {
@@ -52,13 +62,33 @@ class ThresholdingParameters : Fl_Flex
     ThresholdingParameters &operator=(ThresholdingParameters &&) = delete;
 
     ThresholdingParameters(int x, int y, int w, int h, cv::aruco::DetectorParameters &params,
-                           std::function<void(cv::aruco::DetectorParameters)> cb)
+                           std::function<void(cv::aruco::DetectorParameters, cv::aruco::PredefinedDictionaryType)> cb)
         : Fl_Flex(x, y, w, h, Fl_Flex::VERTICAL), m_params(params), m_callback(cb)
     {
-        Fl_Box *title = new Fl_Box(0, 0, 0, 0, "Thresholding");
+        Fl_Box *title = new Fl_Box(0, 0, 0, 0, "Dictionary");
         title->labelfont(FL_HELVETICA_BOLD);
         int ww = 0, hh = 0; // initialize to zero before calling fl_measure()
         title->measure_label(ww, hh);
+
+        Fl_Choice *choice = new Fl_Choice(0, 0, 0, 0, "");
+        for (size_t i = 0; i < dict_names.size(); ++i)
+        {
+            choice->add(dict_names[i]);
+        }
+        choice->value(1);
+        choice->callback(
+            [](Fl_Widget *choice, void *data) {
+                int selected = dynamic_cast<Fl_Choice *>(choice)->value();
+                auto *self = static_cast<ThresholdingParameters *>(data);
+                self->m_dict = cv::aruco::PredefinedDictionaryType(selected);
+                self->m_callback(self->m_params, self->m_dict);
+            },
+            static_cast<void *>(this));
+        this->fixed(title, hh);
+        this->fixed(choice, 2 * hh);
+
+        title = new Fl_Box(0, 0, 0, 0, "Thresholding");
+        title->labelfont(FL_HELVETICA_BOLD);
 
         Fl_Grid *grid = new Fl_Grid(0, 0, 0, 0);
         grid->layout(4, 2, -1, 4);
@@ -175,15 +205,17 @@ class ThresholdingParameters : Fl_Flex
         }
 
         // callback to re-compute with new params
-        m_callback(m_params);
+        m_callback(m_params, m_dict);
     }
 
   private:
     cv::aruco::DetectorParameters &m_params;
-    std::function<void(cv::aruco::DetectorParameters)> m_callback;
+    cv::aruco::PredefinedDictionaryType m_dict;
+    std::function<void(cv::aruco::DetectorParameters, cv::aruco::PredefinedDictionaryType)> m_callback;
 };
 
-Parameters::Parameters(int x, int y, int w, int h, std::function<void(cv::aruco::DetectorParameters)> cb)
+Parameters::Parameters(int x, int y, int w, int h,
+                       std::function<void(cv::aruco::DetectorParameters, cv::aruco::PredefinedDictionaryType)> cb)
     : Fl_Flex(x, y, w, h, Fl_Flex::VERTICAL)
 {
     new ThresholdingParameters(0, 0, w, h, m_params, cb);
